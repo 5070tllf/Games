@@ -23,38 +23,41 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .auth-box button.primary { width:100%; padding:15px; border:none; border-radius:12px; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#000; font-weight:800; font-size:16px; cursor:pointer; margin-bottom:10px; }
 .auth-box button.one-click { width:100%; padding:15px; border:none; border-radius:12px; background:rgba(0,198,255,0.15); color:#00c6ff; border:1px solid rgba(0,198,255,0.4); font-weight:800; font-size:16px; cursor:pointer; display:none; }
 .auth-err { color:#ff3b30; text-align:center; font-size:13px; margin-top:10px; min-height:20px; }
-.header { background:rgba(0,0,0,0.5); backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:12px 16px; flex-shrink:0; }
+
+.header { background:rgba(0,0,0,0.5); backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 12px; flex-shrink:0; }
 .header-row { display:flex; justify-content:space-between; align-items:center; }
-.header-name { font-size:16px; font-weight:800; color:#ffd700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
-.header-realm { font-size:12px; color:#00c6ff; }
-.header-currency { display:flex; gap:10px; font-size:13px; font-weight:bold; }
+.header-name { font-size:15px; font-weight:800; color:#ffd700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
+.header-realm { font-size:11px; color:#00c6ff; }
+.header-currency { display:flex; gap:8px; font-size:12px; font-weight:bold; }
 .currency-jade { color:#00e5ff; }
 .currency-peach { color:#ff9500; }
-.header-stats { display:flex; gap:14px; margin-top:8px; font-size:12px; color:#aaa; }
+.header-stats { display:flex; gap:10px; margin-top:6px; font-size:11px; color:#aaa; justify-content:space-between; }
 .header-stats span { color:#fff; font-weight:bold; }
-.exp-bar-wrap { margin-top:8px; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; }
-.exp-bar { height:100%; background:linear-gradient(90deg,#00c6ff,#ffd700); transition:width 0.3s; border-radius:4px; }
+.exp-bar-wrap { margin-top:6px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+.exp-bar { height:100%; background:linear-gradient(90deg,#00c6ff,#ffd700); transition:width 0.3s; border-radius:3px; }
+.btn-home { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:11px; padding:4px 8px; border-radius:8px; cursor:pointer; margin-left:8px; font-weight:bold; }
+
 .main { flex:1; display:flex; overflow:hidden; position:relative; }
-.page { display:none; flex-direction:column; flex:1; overflow-y:auto; padding:16px; -webkit-overflow-scrolling:touch; }
+.page { display:none; flex-direction:column; flex:1; overflow-y:auto; padding:14px; -webkit-overflow-scrolling:touch; }
 .page.active { display:flex; }
 .tree-area { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; }
 .tree-visual { font-size:120px; filter:drop-shadow(0 0 30px rgba(0,255,100,0.5)); animation:treeBreath 3s ease-in-out infinite; }
 @keyframes treeBreath { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
-.tree-level { font-size:24px; font-weight:900; color:#ffd700; margin-top:10px; text-shadow:0 0 15px rgba(255,215,0,0.6); }
+.tree-level { font-size:22px; font-weight:900; color:#ffd700; margin-top:10px; text-shadow:0 0 15px rgba(255,215,0,0.6); }
 .tree-hint { font-size:12px; color:#888; margin-top:6px; }
-.chop-btn { margin-top:30px; padding:20px 60px; font-size:22px; font-weight:900; background:linear-gradient(135deg,#ff8c00,#ff3b30); color:#fff; border:none; border-radius:20px; cursor:pointer; box-shadow:0 10px 30px rgba(255,59,48,0.4); transition:transform 0.1s; }
+.chop-btn { margin-top:30px; padding:18px 50px; font-size:20px; font-weight:900; background:linear-gradient(135deg,#ff8c00,#ff3b30); color:#fff; border:none; border-radius:20px; cursor:pointer; box-shadow:0 10px 30px rgba(255,59,48,0.4); transition:transform 0.1s; }
 .chop-btn:active { transform:scale(0.92); }
 .chop-btn:disabled { opacity:0.4; cursor:not-allowed; background:linear-gradient(135deg,#555,#333); box-shadow:none; }
 #floatBox { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-.float-text { position:absolute; top:50%; font-size:24px; font-weight:900; color:#30d158; text-shadow:0 0 15px rgba(48,209,88,0.8); animation:floatUp 1.2s ease-out forwards; }
-.drop-text { position:absolute; top:40%; font-size:16px; font-weight:bold; text-shadow:0 0 10px currentColor; animation:floatUp 1.5s ease-out forwards; left:50%; transform:translateX(-50%); }
+.float-text { position:absolute; top:50%; font-size:22px; font-weight:900; color:#30d158; text-shadow:0 0 15px rgba(48,209,88,0.8); animation:floatUp 1.2s ease-out forwards; }
+.drop-text { position:absolute; top:40%; font-size:15px; font-weight:bold; text-shadow:0 0 10px currentColor; animation:floatUp 1.5s ease-out forwards; left:50%; transform:translateX(-50%); }
 @keyframes floatUp { 0% { opacity:1; transform:translateY(0); } 100% { opacity:0; transform:translateY(-100px); } }
 .card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:14px; margin-bottom:12px; backdrop-filter:blur(10px); }
-.card-title { font-size:15px; font-weight:800; color:#00c6ff; margin-bottom:10px; }
+.card-title { font-size:14px; font-weight:800; color:#00c6ff; margin-bottom:10px; }
 .eq-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .eq-slot { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:10px; position:relative; }
 .eq-part { font-size:12px; color:#888; margin-bottom:4px; }
-.eq-quality { font-size:14px; font-weight:800; margin-bottom:4px; }
+.eq-quality { font-size:13px; font-weight:800; margin-bottom:4px; }
 .eq-stats { font-size:11px; color:#aaa; }
 .inv-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; margin-bottom:8px; }
 .pet-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
@@ -62,17 +65,20 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .map-item { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px; margin-bottom:12px; }
 .map-btn { width:100%; padding:12px; margin-top:10px; background:linear-gradient(135deg,#00c6ff,#0072ff); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer; }
 .map-btn:disabled { opacity:0.4; cursor:not-allowed; }
-.big-btn { width:100%; padding:16px; margin-bottom:10px; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
+.big-btn { width:100%; padding:14px; margin-bottom:10px; border:none; border-radius:14px; font-weight:800; font-size:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:4px; }
 .big-btn:disabled { opacity:0.4; cursor:not-allowed; }
 .btn-gold { background:linear-gradient(135deg,#ffd700,#ff8c00); color:#000; }
 .btn-purple { background:linear-gradient(135deg,#9c27b0,#673ab7); color:#fff; }
 .btn-blue { background:linear-gradient(135deg,#00c6ff,#0072ff); color:#fff; }
 .btn-jade { background:linear-gradient(135deg,#00e5ff,#0088ff); color:#fff; }
+.btn-green { background:linear-gradient(135deg,#30d158,#28a745); color:#000; }
+
 .nav { display:flex; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; }
-.nav-btn { flex:1; padding:12px 0; background:none; border:none; color:#888; font-size:11px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:0.2s; }
+.nav-btn { flex:1; padding:10px 0; background:none; border:none; color:#888; font-size:10px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:0.2s; }
 .nav-btn .icon { font-size:20px; }
 .nav-btn.active { color:#00c6ff; }
 .nav-btn.active .icon { filter:drop-shadow(0 0 8px #00c6ff); }
+
 #toastBox { position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:99999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
 .toast { background:rgba(30,30,30,0.95); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.15); padding:10px 18px; border-radius:12px; font-size:13px; font-weight:600; color:#fff; animation:toastIn 0.3s; box-shadow:0 8px 25px rgba(0,0,0,0.5); max-width:90vw; word-break:break-all; }
 @keyframes toastIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
@@ -84,6 +90,18 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .battle-hp { height:24px; background:rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; margin:6px 0; position:relative; }
 .battle-hp-fill { height:100%; transition:width 0.2s; border-radius:12px; }
 .battle-hp-text { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:bold; text-shadow:0 1px 2px #000; }
+
+/* 弹窗UI */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:999999; display:none; justify-content:center; align-items:center; padding:20px; }
+.modal-box { background:rgba(30,30,30,0.95); border:1px solid rgba(255,255,255,0.15); border-radius:24px; width:90%; max-width:400px; max-height:80vh; display:flex; flex-direction:column; padding:20px; }
+.modal-title { font-size:18px; font-weight:900; color:#ffd700; text-align:center; margin-bottom:15px; }
+.modal-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.modal-close { margin-top:15px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.1); color:#fff; border:none; font-weight:bold; cursor:pointer; }
+.rank-tab { display:flex; gap:5px; margin-bottom:10px; overflow-x:auto; padding-bottom:5px; }
+.rank-tab button { flex:1; padding:8px; white-space:nowrap; background:rgba(255,255,255,0.1); border:none; border-radius:8px; color:#aaa; font-weight:bold; font-size:12px; }
+.rank-tab button.active { background:rgba(255,215,0,0.2); color:#ffd700; }
+.rank-list { display:flex; flex-direction:column; gap:8px; }
+.rank-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:13px; }
 </style>
 </head>
 <body>
@@ -120,11 +138,12 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div class="header-name" id="headerName">无名道友</div>
         <div class="header-realm" id="headerRealm">炼气 1 层 · Lv.1</div>
       </div>
-      <div style="text-align:right;">
+      <div style="display:flex; align-items:center;">
         <div class="header-currency">
           <span class="currency-jade">💎 <span id="headerJade">0</span></span>
           <span class="currency-peach">🍑 <span id="headerPeaches">0</span></span>
         </div>
+        <button class="btn-home" onclick="openHomeModal()">👤主页/排行</button>
       </div>
     </div>
     <div class="exp-bar-wrap"><div class="exp-bar" id="expBar" style="width:0%"></div></div>
@@ -186,11 +205,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 
     <div class="page" id="page-cultivate">
       <div class="card">
-        <div class="card-title">仙玉兑换</div>
-        <div style="font-size:12px;color:#888;margin-bottom:10px;">1 仙玉 = 100 仙桃。仙玉只能由作者发放。</div>
-        <button class="big-btn btn-jade" onclick="exchangeJade()">💎 消耗 1 仙玉兑换 100 仙桃</button>
-      </div>
-      <div class="card">
         <div class="card-title">境界修炼</div>
         <div style="font-size:14px;margin-bottom:10px;">当前：<span id="realmDisplay" style="color:#ffd700;font-weight:bold;"></span></div>
         <button class="big-btn btn-blue" onclick="trainRealm()">🧘 修炼（消耗仙桃）</button>
@@ -209,6 +223,20 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div id="taskList"></div>
       </div>
     </div>
+    
+    <!-- 新增商城 -->
+    <div class="page" id="page-shop">
+      <div class="card">
+        <div class="card-title">仙玉兑换</div>
+        <div style="font-size:12px;color:#888;margin-bottom:10px;">1 仙玉 = 100 仙桃。仙玉只能由作者发放。</div>
+        <button class="big-btn btn-jade" onclick="exchangeJade()">💎 消耗 1 仙玉兑换 100 仙桃</button>
+      </div>
+      <div class="card">
+        <div class="card-title">仙桃商城</div>
+        <button class="big-btn btn-green" onclick="buyRandomEquip()">🎁 购买随机装备盲盒（1000仙桃）</button>
+        <button class="big-btn btn-blue" onclick="buySpeedup()">⚡ 购买仙术加速符（5000仙桃）</button>
+      </div>
+    </div>
   </div>
 
   <div class="nav">
@@ -216,8 +244,33 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
     <button class="nav-btn" data-page="equip" onclick="switchPage('equip')"><span class="icon">⚔️</span>装备</button>
     <button class="nav-btn" data-page="map" onclick="switchPage('map')"><span class="icon">🗺️</span>秘境</button>
     <button class="nav-btn" data-page="cultivate" onclick="switchPage('cultivate')"><span class="icon">🧘</span>养成</button>
+    <button class="nav-btn" data-page="shop" onclick="switchPage('shop')"><span class="icon">🛒</span>商城</button>
   </div>
 </div>
+
+<!-- 个人主页 & 排行榜弹窗 -->
+<div class="modal-overlay" id="homeModal">
+  <div class="modal-box">
+    <div class="modal-title">👤 个人主页</div>
+    <div style="text-align:center; margin-bottom:15px;">
+      <div style="font-size:20px;font-weight:900;color:#fff;" id="profName">名字</div>
+      <div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
+    </div>
+    
+    <div class="rank-tab">
+      <button class="active" onclick="switchRankTab('power')">战力榜</button>
+      <button onclick="switchRankTab('level')">等级榜</button>
+      <button onclick="switchRankTab('tree')">仙树榜</button>
+      <button onclick="switchRankTab('pet')">妖王榜</button>
+    </div>
+    <div class="modal-content rank-list" id="rankList">
+      <!-- 排行榜内容 -->
+    </div>
+    
+    <button class="modal-close" onclick="document.getElementById('homeModal').style.display='none'">关闭</button>
+  </div>
+</div>
+
 <div id="toastBox"></div>
 
 <script type="module">
@@ -249,6 +302,7 @@ function safeClampInf(v) {
   if (v === -Infinity) return 0;
   return v;
 }
+// 增强版格式化：防止科学计数法溢出UI
 function fmt(v) {
   v = safeNum(v, 0);
   const abs = Math.abs(v);
@@ -257,10 +311,13 @@ function fmt(v) {
   if (abs < 1e12) return (v/1e8).toFixed(2) + '亿';
   if (abs < 1e16) return (v/1e12).toFixed(2) + '万亿';
   if (abs < 1e20) return (v/1e16).toFixed(2) + '京';
-  return v.toExponential(2);
+  if (abs < 1e24) return (v/1e20).toFixed(2) + '垓';
+  // 超大数字避免撑爆UI，转为科学计数法字符串
+  const exp = Math.floor(Math.log10(abs));
+  const base = (v / Math.pow(10, exp)).toFixed(2);
+  return `${base}e${exp}`;
 }
 
-// 27个品质（原8个 + 新增19个）
 const QUALITY_NAMES = [
   '凡品','下品','中品','上品','极品','仙品','神品','至宝',
   '灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝'
@@ -276,7 +333,6 @@ const QUALITY_MULT = [
 const PART_NAMES = { weapon:'武器', helmet:'头盔', armor:'护甲', boots:'靴子', ring:'戒指', necklace:'项链', belt:'腰带', artifact:'法宝' };
 const PART_KEYS = ['weapon','helmet','armor','boots','ring','necklace','belt','artifact'];
 
-// 29个境界（原10个 + 新增19个）
 const REALM_NAMES = [
   '炼气','筑基','金丹','元婴','化神','炼虚','合体','大乘','渡劫','真仙',
   '玄仙','地仙','天仙','金仙','大罗金仙','混元大罗金仙','准圣','圣人','天道圣人','大道圣人','鸿蒙圣人','造化圣人','混元圣人','无极圣人','太上圣人','混沌圣人','鸿蒙主宰','大道主宰','无极大道'
@@ -309,16 +365,15 @@ let playerName = localStorage.getItem('game_player_name') || '';
 let state = null;
 let playerRef = null;
 let tickTimer = null;
+let allOnlinePlayers = {};
 
 function log(...args) { console.log('[Game]', ...args); }
 
 function getQualityWeights(treeLevel) {
   treeLevel = safeNum(treeLevel, 1);
-  // 树等级无上限，按阶段分配概率，树越高越倾向高级
-  let maxQ = Math.min(26, Math.floor(treeLevel / 10)); // 树每10级解锁一个高品质
+  let maxQ = Math.min(26, Math.floor(treeLevel / 10));
   let w = new Array(27).fill(0);
   if (maxQ === 0) maxQ = 1;
-  // 基础保底
   for (let i = 0; i <= maxQ; i++) {
     w[i] = Math.max(1, 50 - Math.abs(i - maxQ) * 5);
   }
@@ -367,26 +422,30 @@ function freshState(name) {
   };
 }
 
-// 仙树升级（无上限，越来越贵）
+// 升级公式（无上限，防溢出科学计数法）
 function treeUpgradeCost(level) {
   level = safeNum(level, 1);
-  const r = safeMul(10, Math.pow(1.35, level - 1));
-  return Math.round(safeClampInf(r));
+  // 当级数极大时使用更稳的指数计算防0
+  let r = 10 * Math.pow(1.35, level - 1);
+  if (!isFinite(r)) r = MAX_SAFE;
+  return Math.max(10, Math.round(r));
 }
 function treeUpgradeTime(level) {
   level = safeNum(level, 1);
-  const sec = safeMul(30, Math.pow(1.2, level - 1));
+  let sec = 30 * Math.pow(1.2, level - 1);
+  if (!isFinite(sec)) sec = 86400;
   return safeClampInf(sec) * 1000;
 }
-// 仙术升级（无上限，越来越贵）
 function spellUpgradeCost(level) {
   level = safeNum(level, 1);
-  const r = safeMul(20, Math.pow(1.25, level - 1));
-  return Math.round(safeClampInf(r));
+  let r = 20 * Math.pow(1.25, level - 1);
+  if (!isFinite(r)) r = MAX_SAFE;
+  return Math.max(20, Math.round(r));
 }
 function spellUpgradeTime(level) {
   level = safeNum(level, 1);
-  const sec = safeMul(20, Math.pow(1.15, level - 1));
+  let sec = 20 * Math.pow(1.15, level - 1);
+  if (!isFinite(sec)) sec = 86400;
   return safeClampInf(sec) * 1000;
 }
 function getSpellData(spellId) {
@@ -419,7 +478,6 @@ function calcStats() {
     const idx = state.spirits.owned.indexOf(state.spirits.equipped);
     if (idx >= 0 && idx < SPIRIT_HP.length) hp = safeAdd(hp, SPIRIT_HP[idx]);
   }
-  // 境界加成：每提升一个大境界增加大量属性
   atk = safeAdd(atk, safeAdd(safeMul(safeNum(state.realm,0), 200), safeMul(safeNum(state.realmLevel,1), 20)));
   hp = safeAdd(hp, safeAdd(safeMul(safeNum(state.realm,0), 1000), safeMul(safeNum(state.realmLevel,1), 100)));
   
@@ -442,6 +500,101 @@ function calcStats() {
   };
 }
 
+// ===== 排行榜 & 主页 =====
+window.openHomeModal = function() {
+  document.getElementById('profName').innerText = state.name;
+  document.getElementById('profId').innerText = playerId;
+  document.getElementById('homeModal').style.display = 'flex';
+  switchRankTab('power');
+};
+
+window.switchRankTab = function(type) {
+  document.querySelectorAll('.rank-tab button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const listEl = document.getElementById('rankList');
+  listEl.innerHTML = '加载中...';
+
+  // 从实时数据里拿所有人
+  const players = Object.values(allOnlinePlayers);
+  
+  if (type === 'power') {
+    players.sort((a,b) => {
+      // 简单按攻击力排
+      return safeNum(b.atk,0) - safeNum(a.atk,0);
+    });
+  } else if (type === 'level') {
+    players.sort((a,b) => safeNum(b.charLevel,0) - safeNum(a.charLevel,0));
+  } else if (type === 'tree') {
+    players.sort((a,b) => safeNum(b.treeLevel,0) - safeNum(a.treeLevel,0));
+  } else if (type === 'pet') {
+    players.sort((a,b) => safeNum(b.demonKingLevel,0) - safeNum(a.demonKingLevel,0));
+  }
+
+  listEl.innerHTML = '';
+  players.slice(0, 50).forEach((p, index) => {
+    const div = document.createElement('div');
+    div.className = 'rank-item';
+    let valueStr = '';
+    if (type === 'power') valueStr = `攻 ${fmt(p.atk)}`;
+    else if (type === 'level') valueStr = `Lv.${fmt(p.charLevel)}`;
+    else if (type === 'tree') valueStr = `树 Lv.${fmt(p.treeLevel)}`;
+    else if (type === 'pet') valueStr = `妖王 ${p.demonKingLevel||0}`;
+
+    let rankColor = index === 0 ? '#ffd700' : (index === 1 ? '#c0c0c0' : (index === 2 ? '#cd7f32' : '#888'));
+    
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="color:${rankColor}; font-weight:900; width:20px;">${index+1}</span>
+        <span style="color:#fff;">${p.name || '无名'}</span>
+      </div>
+      <span style="color:#00c6ff; font-weight:bold;">${valueStr}</span>
+    `;
+    listEl.appendChild(div);
+  });
+};
+
+// ===== 商城 =====
+window.buyRandomEquip = async function() {
+  if (safeNum(state.peaches,0) < 1000) return toast('🍑 仙桃不足1000');
+  state.peaches = safeAdd(state.peaches, -1000);
+  const eq = genEquipment(state.treeLevel);
+  state.inventory.push(eq);
+  toast(`🎁 盲盒开启：${QUALITY_NAMES[eq.quality]}${PART_NAMES[eq.part]}`);
+  renderAll(); await saveState();
+};
+
+window.buySpeedup = async function() {
+  if (safeNum(state.peaches,0) < 5000) return toast('🍑 仙桃不足5000');
+  state.peaches = safeAdd(state.peaches, -5000);
+  // 找当前正在升级的仙术
+  let sped = false;
+  for (let sp of SPELL_DEFS) {
+    const d = getSpellData(sp.id);
+    if (d.upgradeEnd > Date.now()) {
+      d.upgradeEnd = Date.now(); // 瞬间完成
+      sped = true;
+      toast(`⚡ 加速符使用成功：${sp.name} 已瞬间完成`);
+      break;
+    }
+  }
+  if (!sped) {
+    toast('当前没有正在升级的仙术');
+    state.peaches = safeAdd(state.peaches, 5000); // 退回
+    return;
+  }
+  renderAll(); await saveState();
+};
+
+window.exchangeJade = async function() {
+  if (safeNum(state.jade,0) < 1) return toast('💎 仙玉不足，请联系作者');
+  state.jade = safeAdd(state.jade, -1);
+  state.peaches = safeAdd(state.peaches, 100);
+  toast('💎 兑换成功：仙桃 +100');
+  renderAll();
+  await saveState();
+};
+
+// ===== 登录/注册 =====
 window.switchAuthTab = function(mode) {
   document.getElementById('tabLogin').classList.toggle('active', mode==='login');
   document.getElementById('tabRegister').classList.toggle('active', mode==='register');
@@ -593,6 +746,10 @@ async function loadPlayer() {
     onValue(ref(db, 'game_config/banned_players/' + playerId), (s) => {
       if (s.exists()) showBanScreen(s.val());
     });
+    // 监听所有玩家用于排行榜
+    onValue(ref(db, 'game_players'), (s) => {
+      if (s.exists()) allOnlinePlayers = s.val();
+    });
 
     renderAll();
     startTick();
@@ -671,17 +828,20 @@ function renderAll() {
   document.getElementById('headerPeaches').innerText = fmt(state.peaches);
   document.getElementById('headerAtk').innerText = fmt(stats.atk);
   document.getElementById('headerHp').innerText = fmt(stats.hp);
+  
+  // 经验条（防除0）
   const need = safeMul(100, Math.pow(1.15, safeNum(state.charLevel,1)-1));
   document.getElementById('headerExp').innerText = fmt(state.exp) + '/' + fmt(need);
   const pct = need > 0 ? Math.min(100, (safeNum(state.exp,0) / need * 100)) : 0;
   document.getElementById('expBar').style.width = pct + '%';
+  
   document.getElementById('treeLevelDisplay').innerText = fmt(state.treeLevel);
   document.getElementById('treeLevelHint').innerText = '当前最高掉落：' + qualityHint(state.treeLevel);
   
   const chopBtn = document.getElementById('chopBtn');
   if (safeNum(state.peaches,0) < 1) {
     chopBtn.disabled = true;
-    chopBtn.innerText = '🪓 仙桃不足（可用仙玉兑换）';
+    chopBtn.innerText = '🪓 仙桃不足（去商城兑换）';
   } else {
     chopBtn.disabled = false;
     chopBtn.innerText = '🪓 砍树（消耗1仙桃）';
@@ -693,8 +853,14 @@ function renderAll() {
   
   const tuBtn = document.getElementById('upgradeTreeBtn');
   const isUpgrading = state.treeUpgradeEnd > Date.now();
-  if (isUpgrading) { tuBtn.disabled = true; tuBtn.innerText = `培育中... 剩余 ${formatTime(state.treeUpgradeEnd - Date.now())}`; }
-  else { tuBtn.disabled = false; tuBtn.innerText = `培育仙树（需 ${fmt(treeUpgradeCost(state.treeLevel))} 仙桃）`; }
+  if (isUpgrading) { 
+    tuBtn.disabled = true; 
+    tuBtn.innerText = `培育中... 剩余 ${formatTime(state.treeUpgradeEnd - Date.now())}`; 
+  } else { 
+    tuBtn.disabled = false; 
+    const c = treeUpgradeCost(state.treeLevel);
+    tuBtn.innerHTML = `培育仙树 <span style="font-size:12px; opacity:0.8;">(需 ${fmt(c)} 仙桃)</span>`; 
+  }
   
   document.getElementById('breakthroughBtn').disabled = state.realmLevel < 9 || state.realm >= 28;
   renderSpells(); renderTasks();
@@ -714,7 +880,7 @@ function renderSpells() {
       btnHtml = `<div style="font-size:12px;color:#00c6ff;text-align:center;">升级中... ${formatTime(d.upgradeEnd - Date.now())}</div>
         <div class="countdown-bar"><div class="countdown-fill" style="width:${Math.min(100,((Date.now()-(d.upgradeEnd-spellUpgradeTime(d.level)))/spellUpgradeTime(d.level)*100))}%"></div></div>`;
     } else {
-      btnHtml = `<button onclick="upgradeSpell('${sp.id}')" style="width:100%;padding:8px;background:rgba(0,198,255,0.2);color:#00c6ff;border:1px solid rgba(0,198,255,0.4);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">升级（${fmt(cost)} 仙桃 / ${formatTime(spellUpgradeTime(d.level))}）</button>`;
+      btnHtml = `<button onclick="upgradeSpell('${sp.id}')" style="width:100%;padding:8px;background:rgba(0,198,255,0.2);color:#00c6ff;border:1px solid rgba(0,198,255,0.4);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">升级 <span style="font-size:10px;">(需${fmt(cost)}仙桃 / ${formatTime(spellUpgradeTime(d.level))})</span></button>`;
     }
     div.innerHTML = `<div class="spell-name">${sp.name} Lv.${fmt(d.level)}</div><div class="spell-desc">${sp.desc}（每级 +${sp.per}）</div>${btnHtml}`;
     el.appendChild(div);
@@ -752,6 +918,7 @@ function formatTime(ms) {
   const m = Math.floor(s / 60);
   if (m < 60) return m + '分' + (s%60) + '秒';
   const h = Math.floor(m / 60);
+  if (h > 24) return '>1天';
   return h + '时' + (m%60) + '分';
 }
 
@@ -862,15 +1029,6 @@ window.chopTree = async function() {
   renderAll();
   await saveState();
   setTimeout(() => chopCooldown = false, 500);
-};
-
-window.exchangeJade = async function() {
-  if (safeNum(state.jade,0) < 1) return toast('💎 仙玉不足，请联系作者');
-  state.jade = safeAdd(state.jade, -1);
-  state.peaches = safeAdd(state.peaches, 100);
-  toast('💎 兑换成功：仙桃 +100');
-  renderAll();
-  await saveState();
 };
 
 window.upgradeTree = async function() {
@@ -1145,7 +1303,7 @@ function showBanScreen(data) {
     </div>`;
 }
 window.switchPage = function(page) {
-  ['chop','equip','map','cultivate'].forEach(p => {
+  ['chop','equip','map','cultivate','shop'].forEach(p => {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = 'none';
   });
