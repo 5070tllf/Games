@@ -78,7 +78,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .nav-btn .icon { font-size:20px; }
 .nav-btn.active { color:#00c6ff; }
 .nav-btn.active .icon { filter:drop-shadow(0 0 8px #00c6ff); }
-.nav-btn .icon { font-size:20px; }
 
 #toastBox { position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:99999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
 .toast { background:rgba(30,30,30,0.95); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.15); padding:10px 18px; border-radius:12px; font-size:13px; font-weight:600; color:#fff; animation:toastIn 0.3s; box-shadow:0 8px 25px rgba(0,0,0,0.5); max-width:90vw; word-break:break-all; }
@@ -222,8 +221,10 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
       </div>
       <div class="card">
         <div class="card-title">💎 仙玉专属商城</div>
-        <button class="big-btn btn-jade" onclick="buyJadeItem('hourglass')">⏳ 时光沙漏 (1仙玉)</button>
-        <button class="big-btn btn-jade" onclick="buyJadeItem('ticket')">🎫 副本挑战令 (3仙玉)</button>
+        <button class="big-btn btn-jade" onclick="buyJadeItem('hourglass')">⏳ 时光沙漏 (减少10分钟CD) - 1仙玉</button>
+        <button class="big-btn btn-jade" onclick="buyJadeItem('ticket')">🎫 副本挑战令 (妖王塔次数各+5) - 3仙玉</button>
+        <button class="big-btn btn-jade" onclick="buyJadeItem('pet')">🐾 极品灵兽盲盒 (开出高品质宠物) - 10仙玉</button>
+        <button class="big-btn btn-jade" onclick="buyJadeItem('spirit')">👻 极品精怪盲盒 (开出高品质精怪) - 10仙玉</button>
       </div>
     </div>
 
@@ -236,27 +237,36 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
       </div>
     </div>
 
-    <!-- 独立主页 -->
     <div class="page" id="page-home">
       <div class="card" style="text-align:center;">
         <div style="font-size:24px;font-weight:900;color:#fff;" id="profName">名字</div>
         <div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
         <div style="font-size:12px;color:#ffd700;margin-top:4px;" id="profReincarnate">轮回 0 次</div>
       </div>
+      <div class="card">
+        <div class="card-title">当前属性与状态</div>
+        <div style="font-size:13px;color:#ccc;line-height:1.8;">
+          当前境界：<span id="profRealm" style="color:#00c6ff;"></span><br>
+          装备评分：<span id="profEquipPower" style="color:#ffd700;"></span><br>
+          仙树等级：Lv.<span id="profTree"></span><br>
+          灵兽状态：<span id="profPet"></span><br>
+          精怪状态：<span id="profSpirit"></span>
+        </div>
+      </div>
     </div>
 
-    <!-- 排行榜 -->
     <div class="page" id="page-rank">
       <div class="card">
         <div class="rank-tab" style="display:flex; gap:5px; margin-bottom:10px;">
           <button class="active" onclick="switchRankTab('power', this)">战力榜</button>
           <button onclick="switchRankTab('level', this)">等级榜</button>
+          <button onclick="switchRankTab('pet', this)">宠物榜</button>
+          <button onclick="switchRankTab('equip', this)">装备榜</button>
         </div>
         <div class="rank-list" id="rankList" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
     </div>
 
-    <!-- 好友 -->
     <div class="page" id="page-friend">
       <div class="card">
         <div class="card-title">我的好友</div>
@@ -265,7 +275,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
     </div>
   </div>
 
-  <!-- 底部导航 8 个 Tab -->
   <div class="nav">
     <button class="nav-btn active" data-page="chop" onclick="switchPage('chop')"><span class="icon">🪓</span>砍树</button>
     <button class="nav-btn" data-page="equip" onclick="switchPage('equip')"><span class="icon">⚔️</span>装备</button>
@@ -295,7 +304,7 @@ let globalStateListener = null;
 let globalGifts = [];
 let playerId = localStorage.getItem('game_player_id');
 let playerName = localStorage.getItem('game_player_name') || '';
-let isCreatingSect = false; // 防连点锁
+let isCreatingSect = false;
 
 const MAX_SAFE = 1.7e308;
 function safeNum(v, fallback) { return (typeof v !== 'number' || !isFinite(v) || isNaN(v)) ? (fallback || 0) : v; }
@@ -304,19 +313,30 @@ function safeMul(a, b) { const r = safeNum(a, 0) * safeNum(b, 0); return !isFini
 function safeClampInf(v) { return (typeof v !== 'number' || isNaN(v)) ? 0 : (v === Infinity ? MAX_SAFE : (v === -Infinity ? 0 : v)); }
 function fmt(v) { v = safeNum(v, 0); const abs = Math.abs(v); if (abs < 10000) return Math.floor(v).toString(); if (abs < 1e8) return (v/1e4).toFixed(2) + '万'; if (abs < 1e12) return (v/1e8).toFixed(2) + '亿'; if (abs < 1e16) return (v/1e12).toFixed(2) + '万亿'; return `${(v / Math.pow(10, Math.floor(Math.log10(abs)))).toFixed(2)}e${Math.floor(Math.log10(abs))}`; }
 
-const QUALITY_NAMES = ['凡品','下品','中品','上品','极品','仙品','神品','至宝','灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝','星辰神石','紫微神石','太初神石','混元道果','天道道果','大道道果','鸿蒙道果','无极道果','太上道果','造化玉碟','混沌珠','盘古斧','东皇钟','太极图','诛仙剑','山河社稷图','炼妖壶','昊天塔','伏羲琴','神农鼎','昆仑镜','崆峒印','凤凰琴','九霄环佩','天问神剑','太虚神甲','大罗天衣','无极仙袍','造化仙袍','鸿蒙仙袍','圣道仙袍','天道仙袍','大道仙袍','混沌至宝','鸿蒙本源','宇宙本源','万物母气','天地玄黄','鸿蒙紫气','大道法则','混沌法则','终极本源'];
-const QUALITY_COLORS = ['#9e9e9e','#4caf50','#2196f3','#9c27b0','#ff9800','#e91e63','#ffeb3b','#ff1744','#00e5ff','#1de9b6','#76ff03','#ffea00','#ff9100','#ff4081','#e040fb','#7c4dff','#536dfe','#448aff','#18ffff','#64ffda','#69f0ae','#b2ff59','#eeff41','#ffff00','#ffd740','#ffab40','#ff6e40','#ff1744','#d50000','#ff4081','#f50057','#e040fb','#aa00ff','#7c4dff','#6200ea','#536dfe','#304ffe','#448aff','#2962ff','#18ffff','#00b8d4','#64ffda','#00bfa5','#69f0ae','#00c853','#b2ff59','#64dd17','#eeff41','#aeea00','#ffff00','#ffd600','#ffd740','#ffc400','#ffab40','#ff9100','#ff6e40','#ff3d00','#ff8a80','#ff5252','#ff1744','#d50000','#ff00ff','#d500f9','#aa00ff','#ffffff'];
-const QUALITY_MULT = [1, 1.5, 2.2, 3.5, 5.5, 9, 15, 25, 40, 60, 90, 130, 180, 250, 350, 500, 700, 1000, 1500, 2200, 3500, 5500, 9000, 15000, 25000, 40000, 70000, 100000, 150000, 220000, 350000, 550000, 900000, 1500000, 2500000, 4000000, 7000000, 10000000, 15000000, 25000000, 40000000, 70000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 50000000000, 100000000000, 500000000000, 1000000000000, 5000000000000, 10000000000000, 50000000000000, 100000000000000, 500000000000000, 1000000000000000, 5000000000000000, 10000000000000000, 50000000000000000, 100000000000000000, 500000000000000000, 1000000000000000000, 5000000000000000000, 10000000000000000000];
+// 107个品质（原67个 + 新增40个）
+const QUALITY_NAMES = [
+  '凡品','下品','中品','上品','极品','仙品','神品','至宝','灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝','星辰神石','紫微神石','太初神石','混元道果','天道道果','大道道果','鸿蒙道果','无极道果','太上道果','造化玉碟','混沌珠','盘古斧','东皇钟','太极图','诛仙剑','山河社稷图','炼妖壶','昊天塔','伏羲琴','神农鼎','昆仑镜','崆峒印','凤凰琴','九霄环佩','天问神剑','太虚神甲','大罗天衣','无极仙袍','造化仙袍','鸿蒙仙袍','圣道仙袍','天道仙袍','大道仙袍','混沌至宝','鸿蒙本源','宇宙本源','万物母气','天地玄黄','鸿蒙紫气','大道法则','混沌法则','终极本源',
+  '起源之石','维度结晶','时空沙漏','因果之丝','命运纺锤','虚无之源','创世神剑','灭世黑莲','不朽神座','永恒天舟','星空古路','神话之翼','纪元之书','真理之眼','无尽深渊','璀璨星海','神魔之血','仙帝传承','天道载体','大道仙宫','混元道胎','无极神图','鸿蒙紫府','造化玉盘','太上道剑','混沌神鼎','鸿蒙圣衣','本源神格','宇宙之心','万物母胎','鸿蒙青莲','创世青莲','灭世黑莲','造化青莲','混沌青莲','大道青莲','天道青莲','鸿蒙青莲','虚无青莲','终焉青莲'
+];
+const QUALITY_COLORS = [
+  '#9e9e9e','#4caf50','#2196f3','#9c27b0','#ff9800','#e91e63','#ffeb3b','#ff1744','#00e5ff','#1de9b6','#76ff03','#ffea00','#ff9100','#ff4081','#e040fb','#7c4dff','#536dfe','#448aff','#18ffff','#64ffda','#69f0ae','#b2ff59','#eeff41','#ffff00','#ffd740','#ffab40','#ff6e40','#ff1744','#d50000','#ff4081','#f50057','#e040fb','#aa00ff','#7c4dff','#6200ea','#536dfe','#304ffe','#448aff','#2962ff','#18ffff','#00b8d4','#64ffda','#00bfa5','#69f0ae','#00c853','#b2ff59','#64dd17','#eeff41','#aeea00','#ffff00','#ffd600','#ffd740','#ffc400','#ffab40','#ff9100','#ff6e40','#ff3d00','#ff8a80','#ff5252','#ff1744','#d50000','#ff00ff','#d500f9','#aa00ff','#ffffff',
+  '#ffffff','#e0e0e0','#bdbdbd','#9e9e9e','#757575','#616161','#424242','#212121','#000000','#ff0000','#00ff00','#0000ff','#ffff00','#00ffff','#ff00ff','#ff8000','#8000ff','#00ff80','#ff0080','#80ff00','#0080ff','#ff80ff','#80ffff','#ffff80','#800000','#008000','#000080','#808000','#008080','#800080','#c0c0c0','#ff4500','#32cd32','#1e90ff','#ff69b4','#00ced1','#ffd700','#adff2f','#ff1493','#7fffd4'
+];
+const QUALITY_MULT = [1, 1.5, 2.2, 3.5, 5.5, 9, 15, 25, 40, 60, 90, 130, 180, 250, 350, 500, 700, 1000, 1500, 2200, 3500, 5500, 9000, 15000, 25000, 40000, 70000, 100000, 150000, 220000, 350000, 550000, 900000, 1500000, 2500000, 4000000, 7000000, 10000000, 15000000, 25000000, 40000000, 70000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 50000000000, 100000000000, 500000000000, 1000000000000, 5000000000000, 10000000000000, 50000000000000, 100000000000000, 500000000000000, 1000000000000000, 5000000000000000, 10000000000000000, 50000000000000000, 100000000000000000, 500000000000000000, 1000000000000000000, 5000000000000000000, 10000000000000000000,
+  2e19, 5e19, 1e20, 2e20, 5e20, 1e21, 2e21, 5e21, 1e22, 2e22, 5e22, 1e23, 2e23, 5e23, 1e24, 2e24, 5e24, 1e25, 2e25, 5e25, 1e26, 2e26, 5e26, 1e27, 2e27, 5e27, 1e28, 2e28, 5e28, 1e29, 2e29, 5e29, 1e30, 2e30, 5e30, 1e31, 2e31, 5e31, 1e32, 5e32
+];
 const PART_NAMES = { weapon:'武器', helmet:'头盔', armor:'护甲', boots:'靴子', ring:'戒指', necklace:'项链', belt:'腰带', artifact:'法宝' };
 const PART_KEYS = ['weapon','helmet','armor','boots','ring','necklace','belt','artifact'];
 const REALM_NAMES = ['炼气','筑基','金丹','元婴','化神','炼虚','合体','大乘','渡劫','真仙','玄仙','地仙','天仙','金仙','大罗金仙','混元大罗金仙','准圣','圣人','天道圣人','大道圣人','鸿蒙圣人','造化圣人','混元圣人','无极圣人','太上圣人','混沌圣人','鸿蒙主宰','大道主宰','无极大道','太初大道','太易大道','太始大道','太素大道','太极大道','混元无极大罗金仙','混元太上无极金仙','混元太初无上金仙','混元太易无上金仙','混元太始无上金仙','混元太素无上金仙','混元太极无上金仙','混元太极大罗金仙','混元无极太上金仙','混元无上太初金仙','混元无上太易金仙','混元无上太始金仙','混元无上太素金仙','混元无上太极金仙','混元无极天道圣人','混元无上大道圣人','混元无极鸿蒙圣人','混元无上造化圣人','混元无极混元圣人','混元无上无极圣人','混元无极太上圣人','混元无上混沌圣人','混元无极鸿蒙主宰','混元无上大道主宰','混元无极无极大道','太上无极混元无上大道','太上无极混元无上天道','太上无极混元无上鸿蒙','太上无极混元无上造化','太上无极混元无上混沌','太上无极混元无上本源','太上无极混元无上终极','大道本源无上主宰','鸿蒙本源无上主宰','混沌本源无上主宰','宇宙本源无上主宰','万物本源无上主宰','终极本源无上主宰'];
-const PET_NAMES = ['灵狐','火麒麟','九尾狐'];
-const PET_ATK = [5, 15, 40];
-const SPIRIT_NAMES = ['树精','石灵','剑灵'];
-const SPIRIT_HP = [30, 100, 300];
+
+const PET_NAMES = ['灵狐','火麒麟','九尾狐','白虎','朱雀','玄武','青龙','穷奇','饕餮','混沌','梼杌','金乌','鲲鹏','凤凰','麒麟','狻猊','睚眦','囚牛','蒲牢','霸下'];
+const SPIRIT_NAMES = ['树精','石灵','剑灵','火灵','水灵','风灵','雷灵','光灵','暗灵','花精','药灵','器灵','符灵','阵灵','傀灵','妖灵','魔灵','仙灵','神灵','圣灵'];
+const PET_ATK = [5,15,40,100,250,500,1000,2000,5000,10000,20000,50000,100000,200000,500000,1000000,2000000,5000000,10000000,50000000];
+const SPIRIT_HP = [30,100,300,800,2000,5000,10000,20000,50000,100000,200000,500000,1000000,2000000,5000000,10000000,20000000,50000000,100000000,500000000];
+
 const SPELL_DEFS = [{ id:'sword', name:'御剑术', desc:'提升攻击', stat:'atk', per:5 },{ id:'flame', name:'烈焰诀', desc:'提升暴击率', stat:'critRate', per:0.005 },{ id:'ice', name:'寒冰咒', desc:'提升暴伤', stat:'critDmg', per:0.05 },{ id:'shield', name:'金刚罩', desc:'提升气血', stat:'hp', per:20 },{ id:'wind', name:'疾风步', desc:'提升幸运', stat:'luck', per:1 },{ id:'heal', name:'回春术', desc:'提升气血', stat:'hp', per:15 }];
 
-function getQualityWeights(treeLevel) { treeLevel = safeNum(treeLevel, 1); let maxQ = Math.min(66, Math.floor(treeLevel / 5)); let w = new Array(67).fill(0); if (maxQ === 0) maxQ = 1; for (let i = 0; i <= maxQ; i++) w[i] = Math.max(1, 50 - Math.abs(i - maxQ) * 5); return w; }
+function getQualityWeights(treeLevel) { treeLevel = safeNum(treeLevel, 1); let maxQ = Math.min(106, Math.floor(treeLevel / 2)); let w = new Array(107).fill(0); if (maxQ === 0) maxQ = 1; for (let i = 0; i <= maxQ; i++) w[i] = Math.max(1, 50 - Math.abs(i - maxQ) * 5); return w; }
 function rollQuality(treeLevel) { const w = getQualityWeights(treeLevel); const total = w.reduce((a,b)=>a+b,0); let r = Math.random() * total; for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return i; } return 0; }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function genEquipment(treeLevel) { treeLevel = safeNum(treeLevel, 1); const part = PART_KEYS[randInt(0, PART_KEYS.length - 1)]; const quality = rollQuality(treeLevel); const mult = QUALITY_MULT[quality] || 1; const base = safeMul(5 + treeLevel * 2, mult); return { id: 'EQ-' + Date.now() + '-' + randInt(1000,9999), part, quality, atk: Math.round(safeMul(base, 0.8 + Math.random()*0.4)), hp: Math.round(safeMul(base, (0.8 + Math.random()*0.4) * 2)), critRate: quality >= 4 ? +(Math.random()*0.03).toFixed(3) : 0, critDmg: quality >= 4 ? +(Math.random()*0.3).toFixed(2) : 0, enhance: 0 }; }
@@ -330,19 +350,24 @@ function spellUpgradeTime(level) { level = safeNum(level, 1); let sec = 20 * Mat
 function getSpellData(spellId) { if (!state.spells[spellId]) state.spells[spellId] = { level: 1, upgradeEnd: 0 }; return state.spells[spellId]; }
 
 function calcStats() {
-  if (!state) return { atk:0, hp:0, critRate:0, critDmg:1.5, luck:0, totalPower:0 };
+  if (!state) return { atk:0, hp:0, critRate:0, critDmg:1.5, luck:0, totalPower:0, equipPower:0, petPower:0 };
   let reincMult = Math.pow(2, safeNum(state.reincarnateCount, 0));
   let atk = safeAdd(state.atk, safeMul(safeNum(state.charLevel,1) - 1, 5));
   let hp = safeAdd(state.hp, safeMul(safeNum(state.charLevel,1) - 1, 20));
   let critRate = safeNum(state.critRate, 0); let critDmg = safeNum(state.critDmg, 1.5); let luck = safeNum(state.luck, 0);
-  for (let p of PART_KEYS) { const eq = state.equipment[p]; if (eq) { const enhMult = 1 + safeNum(eq.enhance, 0) * 0.1; atk = safeAdd(atk, Math.round(safeMul(safeNum(eq.atk, 0), enhMult))); hp = safeAdd(hp, Math.round(safeMul(safeNum(eq.hp, 0), enhMult))); critRate = safeAdd(critRate, safeNum(eq.critRate, 0)); critDmg = safeAdd(critDmg, safeNum(eq.critDmg, 0)); } }
-  if (state.pets.equipped !== null) { const idx = state.pets.owned.indexOf(state.pets.equipped); if (idx >= 0 && idx < PET_ATK.length) atk = safeAdd(atk, PET_ATK[idx]); }
-  if (state.spirits.equipped !== null) { const idx = state.spirits.owned.indexOf(state.spirits.equipped); if (idx >= 0 && idx < SPIRIT_HP.length) hp = safeAdd(hp, SPIRIT_HP[idx]); }
+  
+  let equipPower = 0;
+  for (let p of PART_KEYS) { const eq = state.equipment[p]; if (eq) { const enhMult = 1 + safeNum(eq.enhance, 0) * 0.1; atk = safeAdd(atk, Math.round(safeMul(safeNum(eq.atk, 0), enhMult))); hp = safeAdd(hp, Math.round(safeMul(safeNum(eq.hp, 0), enhMult))); critRate = safeAdd(critRate, safeNum(eq.critRate, 0)); critDmg = safeAdd(critDmg, safeNum(eq.critDmg, 0)); equipPower += eq.atk + eq.hp; } }
+  
+  let petPower = 0;
+  if (state.pets.equipped !== null) { const idx = state.pets.owned.indexOf(state.pets.equipped); if (idx >= 0 && idx < PET_ATK.length) { atk = safeAdd(atk, PET_ATK[idx]); petPower += PET_ATK[idx]; } }
+  if (state.spirits.equipped !== null) { const idx = state.spirits.owned.indexOf(state.spirits.equipped); if (idx >= 0 && idx < SPIRIT_HP.length) { hp = safeAdd(hp, SPIRIT_HP[idx]); petPower += SPIRIT_HP[idx]; } }
+  
   atk = safeAdd(atk, safeAdd(safeMul(safeNum(state.realm,0), 200), safeMul(safeNum(state.realmLevel,1), 20)));
   hp = safeAdd(hp, safeAdd(safeMul(safeNum(state.realm,0), 1000), safeMul(safeNum(state.realmLevel,1), 100)));
   for (let sp of SPELL_DEFS) { const d = state.spells[sp.id]; if (!d) continue; const val = safeMul(safeNum(d.level, 1), sp.per); if (sp.stat === 'atk') atk = safeAdd(atk, val); else if (sp.stat === 'hp') hp = safeAdd(hp, val); else if (sp.stat === 'critRate') critRate = safeAdd(critRate, val); else if (sp.stat === 'critDmg') critDmg = safeAdd(critDmg, val); else if (sp.stat === 'luck') luck = safeAdd(luck, val); }
-  atk = safeMul(atk, reincMult); hp = safeMul(hp, reincMult);
-  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(safeAdd(atk, safeMul(hp, 0.5)))) };
+  atk = safeMul(atk, reincMult); hp = safeMul(hp, reincMult); equipPower = safeMul(equipPower, reincMult); petPower = safeMul(petPower, reincMult);
+  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(safeAdd(atk, safeMul(hp, 0.5)))), equipPower: Math.round(equipPower), petPower: Math.round(petPower) };
 }
 
 // ===== 初始化 =====
@@ -409,7 +434,34 @@ async function loadPlayer() {
     
     onValue(ref(db, 'game_players/' + playerId + '/inbox'), (s) => { if (!s.exists()) return; const inbox = s.val(); for (let key in inbox) { const item = inbox[key]; if (!item.claimed) claimInboxItem(key, item); } });
     onValue(ref(db, 'game_config/banned_players/' + playerId), (s) => { if (s.exists()) showBanScreen(s.val()); });
-    onValue(ref(db, 'game_players'), (s) => { if (s.exists()) { allOnlinePlayers = s.val(); for (let k in allOnlinePlayers) { const p = allOnlinePlayers[k]; allOnlinePlayers[k].playerId = k; let baseP = (p.atk||0) + (p.hp||0)*0.5 + (p.realm||0)*200; allOnlinePlayers[k].totalPower = baseP * Math.pow(2, p.reincarnateCount||0); } } });
+    
+    onValue(ref(db, 'game_players'), (s) => { 
+      if (s.exists()) { 
+        allOnlinePlayers = s.val(); 
+        for (let k in allOnlinePlayers) { 
+          const p = allOnlinePlayers[k]; 
+          allOnlinePlayers[k].playerId = k; 
+          let baseP = (p.atk||0) + (p.hp||0)*0.5 + (p.realm||0)*200; 
+          let petP = 0;
+          if(p.pets && p.pets.equipped !== null) {
+            const idx = p.pets.owned.indexOf(p.pets.equipped);
+            if(idx >= 0 && idx < PET_ATK.length) petP += PET_ATK[idx];
+          }
+          if(p.spirits && p.spirits.equipped !== null) {
+            const idx = p.spirits.owned.indexOf(p.spirits.equipped);
+            if(idx >= 0 && idx < SPIRIT_HP.length) petP += SPIRIT_HP[idx];
+          }
+          let eqP = 0;
+          if(p.equipment) {
+            for(let pt of PART_KEYS){ if(p.equipment[pt]) eqP += p.equipment[pt].atk + p.equipment[pt].hp; }
+          }
+          let reincMult = Math.pow(2, p.reincarnateCount||0);
+          allOnlinePlayers[k].totalPower = baseP * reincMult;
+          allOnlinePlayers[k].petPower = petP * reincMult;
+          allOnlinePlayers[k].equipPower = eqP * reincMult;
+        } 
+      } 
+    });
     
     renderAll(); startTick(); return true;
   } catch (e) { authErr('读取存档失败: ' + e.message); return false; }
@@ -463,6 +515,12 @@ function renderHome() {
   document.getElementById('profName').innerText = state.name || '无名道友';
   document.getElementById('profId').innerText = playerId;
   document.getElementById('profReincarnate').innerText = `轮回 ${state.reincarnateCount||0} 次 | 天赋点 ${state.talentPoints||0}`;
+  const stats = calcStats();
+  document.getElementById('profRealm').innerText = (REALM_NAMES[state.realm] || '未知') + ' ' + state.realmLevel + ' 层';
+  document.getElementById('profEquipPower').innerText = `评分 ${fmt(stats.equipPower)}`;
+  document.getElementById('profTree').innerText = fmt(state.treeLevel);
+  document.getElementById('profPet').innerText = state.pets.equipped !== null ? PET_NAMES[state.pets.equipped] : '未上阵';
+  document.getElementById('profSpirit').innerText = state.spirits.equipped !== null ? SPIRIT_NAMES[state.spirits.equipped] : '未上阵';
 }
 
 function renderFriends() {
@@ -509,9 +567,9 @@ function renderInventory() {
 
 function renderPetsSpirits() {
   const petEl = document.getElementById('petList'); petEl.innerHTML = '';
-  PET_NAMES.forEach((name, i) => { const owned = state.pets.owned.includes(i); const equipped = state.pets.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ffd700;">${name}</div><div style="font-size:11px;color:#aaa;">攻 +${PET_ATK[i]}</div>${owned ? `<button onclick="equipPet(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(0,198,255,0.2)'};color:${equipped?'#30d158':'#00c6ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; petEl.appendChild(div); });
+  PET_NAMES.slice(0, 10).forEach((name, i) => { const owned = state.pets.owned.includes(i); const equipped = state.pets.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ffd700;">${name}</div><div style="font-size:11px;color:#aaa;">攻 +${fmt(PET_ATK[i])}</div>${owned ? `<button onclick="equipPet(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(0,198,255,0.2)'};color:${equipped?'#30d158':'#00c6ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; petEl.appendChild(div); });
   const spEl = document.getElementById('spiritList'); spEl.innerHTML = '';
-  SPIRIT_NAMES.forEach((name, i) => { const owned = state.spirits.owned.includes(i); const equipped = state.spirits.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ff00ff;">${name}</div><div style="font-size:11px;color:#aaa;">血 +${SPIRIT_HP[i]}</div>${owned ? `<button onclick="equipSpirit(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(255,0,255,0.2)'};color:${equipped?'#30d158':'#ff00ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; spEl.appendChild(div); });
+  SPIRIT_NAMES.slice(0, 10).forEach((name, i) => { const owned = state.spirits.owned.includes(i); const equipped = state.spirits.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ff00ff;">${name}</div><div style="font-size:11px;color:#aaa;">血 +${fmt(SPIRIT_HP[i])}</div>${owned ? `<button onclick="equipSpirit(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(255,0,255,0.2)'};color:${equipped?'#30d158':'#ff00ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; spEl.appendChild(div); });
 }
 
 window.switchRankTab = function(type, btn) {
@@ -523,10 +581,13 @@ window.switchRankTab = function(type, btn) {
   const players = Object.values(allOnlinePlayers);
   if (type === 'power') players.sort((a,b) => safeNum(b.totalPower,0) - safeNum(a.totalPower,0));
   else if (type === 'level') players.sort((a,b) => safeNum(b.charLevel,0) - safeNum(a.charLevel,0));
+  else if (type === 'pet') players.sort((a,b) => safeNum(b.petPower,0) - safeNum(a.petPower,0));
+  else if (type === 'equip') players.sort((a,b) => safeNum(b.equipPower,0) - safeNum(a.equipPower,0));
+  
   listEl.innerHTML = '';
   players.slice(0, 50).forEach((p, index) => {
     const div = document.createElement('div'); div.className = 'rank-item';
-    let valueStr = type === 'power' ? `战力 ${fmt(p.totalPower || p.atk)}` : `Lv.${fmt(p.charLevel)}`;
+    let valueStr = type === 'power' ? `战力 ${fmt(p.totalPower||0)}` : type === 'level' ? `Lv.${fmt(p.charLevel||1)}` : type === 'pet' ? `宠战 ${fmt(p.petPower||0)}` : `装评 ${fmt(p.equipPower||0)}`;
     let rankColor = index === 0 ? '#ffd700' : (index === 1 ? '#c0c0c0' : (index === 2 ? '#cd7f32' : '#888'));
     div.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><span style="color:${rankColor}; font-weight:900; width:20px;">${index+1}</span><span style="color:#fff;">${p.name || '无名'}</span></div><div style="display:flex; align-items:center; gap:10px;"><span style="color:#00c6ff; font-weight:bold;">${valueStr}</span><button onclick="addFriend('${p.playerId}')" style="padding:4px 8px; background:rgba(0,198,255,0.2); border:1px solid #00c6ff; color:#00c6ff; border-radius:6px; font-size:10px;">加好友</button></div>`;
     listEl.appendChild(div);
@@ -548,7 +609,6 @@ window.giveGift = function(fId) {
   toast('赠送成功！'); renderAll(); saveState();
 };
 
-// 宗门防连点
 window.createSect = function() {
   if (isCreatingSect) return;
   if (state.sect) return toast('你已经有宗门了');
@@ -557,7 +617,9 @@ window.createSect = function() {
   if (!name) return;
   isCreatingSect = true;
   state.jade -= 100; state.sect = { name, level: 1, creator: playerId };
-  toast('🏯 宗门创建成功！'); renderAll(); saveState().then(() => { isCreatingSect = false; });
+  update(playerRef, { jade: state.jade, sect: state.sect }).then(() => {
+    toast('🏯 宗门创建成功！'); renderAll(); isCreatingSect = false;
+  }).catch(() => { isCreatingSect = false; toast('网络错误'); });
 };
 
 let chopCooldown = false;
@@ -590,7 +652,12 @@ window.reforgeItem = async function(idx) { const eq = state.inventory[idx]; if (
 window.equipPet = async function(i) { state.pets.equipped = state.pets.equipped === i ? null : i; renderAll(); await saveState(); };
 window.equipSpirit = async function(i) { state.spirits.equipped = state.spirits.equipped === i ? null : i; renderAll(); await saveState(); };
 window.doReincarnate = function() { if (state.realm < 10) return toast('境界需达到真仙以上才能轮回'); if (!confirm('轮回将重置境界、等级、仙树和仙术，但会获得轮回天赋点（永久增加全属性），确定吗？')) return; state.reincarnateCount = (state.reincarnateCount || 0) + 1; state.talentPoints = (state.talentPoints || 0) + 5; state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0; state.treeLevel = 1; state.spells = {}; state.peaches = 20; toast('☯️ 轮回成功！'); renderAll(); saveState(); };
-window.buyJadeItem = async function(itemType) { let cost = itemType === 'hourglass' ? 1 : 3; if (safeNum(state.jade,0) < cost) return toast(`💎 仙玉不足`); state.jade = safeAdd(state.jade, -cost); if (itemType === 'hourglass') { state.treeUpgradeEnd -= 600000; if (state.treeUpgradeEnd < Date.now()) state.treeUpgradeEnd = Date.now(); toast('⏳ 时间减少10分钟'); } else if (itemType === 'ticket') { state.demonTickets = safeAdd(state.demonTickets, 5); state.towerTickets = safeAdd(state.towerTickets, 5); toast('🎫 次数增加'); } renderAll(); await saveState(); };
+window.buyJadeItem = async function(itemType) { let cost = itemType === 'hourglass' ? 1 : itemType === 'ticket' ? 3 : 10; if (safeNum(state.jade,0) < cost) return toast(`💎 仙玉不足`); state.jade = safeAdd(state.jade, -cost); 
+  if (itemType === 'hourglass') { state.treeUpgradeEnd -= 600000; if (state.treeUpgradeEnd < Date.now()) state.treeUpgradeEnd = Date.now(); toast('⏳ 时光沙漏使用成功'); } 
+  else if (itemType === 'ticket') { state.demonTickets = safeAdd(state.demonTickets, 5); state.towerTickets = safeAdd(state.towerTickets, 5); toast('🎫 次数增加'); } 
+  else if (itemType === 'pet') { const pIdx = randInt(0, 19); if (!state.pets.owned.includes(pIdx)) { state.pets.owned.push(pIdx); toast(`🎉 获得新灵兽：${PET_NAMES[pIdx]}`); } else { toast(`重复灵兽：${PET_NAMES[pIdx]}，转化为仙桃`); state.peaches = safeAdd(state.peaches, 5000); } } 
+  else if (itemType === 'spirit') { const sIdx = randInt(0, 19); if (!state.spirits.owned.includes(sIdx)) { state.spirits.owned.push(sIdx); toast(`🎉 获得新精怪：${SPIRIT_NAMES[sIdx]}`); } else { toast(`重复精怪：${SPIRIT_NAMES[sIdx]}，转化为仙桃`); state.peaches = safeAdd(state.peaches, 5000); } } 
+  renderAll(); await saveState(); };
 window.exploreRuins = async function() { if (state.jade < 5) return toast('仙玉不足'); state.jade -= 5; const eq = genEquipment(state.treeLevel + 30); state.inventory.push(eq); toast(`🏛️ 遗迹掉落：${QUALITY_NAMES[eq.quality]}`); renderAll(); saveState(); };
 window.donateSect = function() { if (!state.sect) return; if (state.peaches < 1000) return toast('仙桃不足1000'); state.peaches -= 1000; state.sectPoints = safeAdd(state.sectPoints, 10); toast('捐献成功，宗门贡献 +10'); renderAll(); saveState(); };
 
