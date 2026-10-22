@@ -23,7 +23,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .auth-box button.primary { width:100%; padding:15px; border:none; border-radius:12px; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#000; font-weight:800; font-size:16px; cursor:pointer; margin-bottom:10px; }
 .auth-box button.one-click { width:100%; padding:15px; border:none; border-radius:12px; background:rgba(0,198,255,0.15); color:#00c6ff; border:1px solid rgba(0,198,255,0.4); font-weight:800; font-size:16px; cursor:pointer; display:none; }
 .auth-err { color:#ff3b30; text-align:center; font-size:13px; margin-top:10px; min-height:20px; }
-
 .header { background:rgba(0,0,0,0.5); backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 12px; flex-shrink:0; }
 .header-row { display:flex; justify-content:space-between; align-items:center; }
 .header-name { font-size:15px; font-weight:800; color:#ffd700; text-shadow:0 0 10px rgba(255,215,0,0.5); }
@@ -218,6 +217,8 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <button class="big-btn btn-blue" onclick="trainRealm()">🧘 修炼</button>
         <button class="big-btn btn-purple" id="breakthroughBtn" onclick="breakthrough()">⚡ 渡劫突破</button>
         <button class="big-btn btn-orange" style="margin-top:10px;" onclick="doReincarnate()">☯️ 轮回转生 (重置境界获取天赋点)</button>
+        <button class="big-btn btn-gold" onclick="buyExtraDrop()">🪓 消耗天赋点升级：额外掉落装备</button>
+        <div style="font-size:12px;color:#ffd700;margin-top:5px;text-align:center;">当前额外掉落件数：+<span id="extraDropDisplay">0</span></div>
       </div>
       <div class="card">
         <div class="card-title">仙树与仙术</div>
@@ -266,7 +267,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
       <div style="font-size:20px;font-weight:900;color:#fff;" id="profName">名字</div>
       <div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
       <div style="font-size:12px;color:#ffd700;margin-top:4px;" id="profReincarnate">轮回 0 次</div>
-      <button onclick="showRealmList()" style="margin-top:8px; padding:4px 10px; background:rgba(0,198,255,0.2); border:1px solid rgba(0,198,255,0.4); color:#00c6ff; border-radius:6px; font-size:12px; cursor:pointer;">查看所有境界</button>
     </div>
     
     <div class="rank-tab">
@@ -299,7 +299,6 @@ function fmt(v) {
   if (abs < 1e12) return (v/1e8).toFixed(2) + '亿';
   if (abs < 1e16) return (v/1e12).toFixed(2) + '万亿';
   if (abs < 1e20) return (v/1e16).toFixed(2) + '京';
-  if (abs < 1e24) return (v/1e20).toFixed(2) + '垓';
   return `${(v / Math.pow(10, Math.floor(Math.log10(abs)))).toFixed(2)}e${Math.floor(Math.log10(abs))}`;
 }
 
@@ -358,9 +357,7 @@ function getSpellData(spellId) { if (!state.spells[spellId]) state.spells[spellI
 
 function calcStats() {
   if (!state) return { atk:0, hp:0, critRate:0, critDmg:1.5, luck:0, totalPower:0 };
-  // 轮回加成：每次转生全属性翻倍
   let reincMult = Math.pow(2, safeNum(state.reincarnateCount, 0));
-  
   let atk = safeAdd(state.atk, safeMul(safeNum(state.charLevel,1) - 1, 5));
   let hp = safeAdd(state.hp, safeMul(safeNum(state.charLevel,1) - 1, 20));
   let critRate = safeNum(state.critRate, 0); let critDmg = safeNum(state.critDmg, 1.5); let luck = safeNum(state.luck, 0);
@@ -372,32 +369,16 @@ function calcStats() {
   hp = safeAdd(hp, safeAdd(safeMul(safeNum(state.realm,0), 1000), safeMul(safeNum(state.realmLevel,1), 100)));
   for (let sp of SPELL_DEFS) { const d = state.spells[sp.id]; if (!d) continue; const val = safeMul(safeNum(d.level, 1), sp.per); if (sp.stat === 'atk') atk = safeAdd(atk, val); else if (sp.stat === 'hp') hp = safeAdd(hp, val); else if (sp.stat === 'critRate') critRate = safeAdd(critRate, val); else if (sp.stat === 'critDmg') critDmg = safeAdd(critDmg, val); else if (sp.stat === 'luck') luck = safeAdd(luck, val); }
   
-  atk = safeMul(atk, reincMult);
-  hp = safeMul(hp, reincMult);
-  
-  return { 
-    atk: Math.round(safeClampInf(atk)), 
-    hp: Math.round(safeClampInf(hp)), 
-    critRate: Math.min(safeNum(critRate, 0), 1), 
-    critDmg: Math.max(1, safeClampInf(critDmg)), 
-    luck: Math.round(safeClampInf(luck)),
-    totalPower: Math.round(safeClampInf(safeAdd(atk, safeMul(hp, 0.5)))) 
-  };
+  atk = safeMul(atk, reincMult); hp = safeMul(hp, reincMult);
+  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(safeAdd(atk, safeMul(hp, 0.5)))) };
 }
 
-window.openHomeModal = function() { 
-  document.getElementById('profName').innerText = state.name; 
-  document.getElementById('profId').innerText = playerId; 
-  document.getElementById('profReincarnate').innerText = `轮回 ${state.reincarnateCount||0} 次 · 天赋点 ${state.talentPoints||0}`; 
-  document.getElementById('homeModal').style.display = 'flex'; 
-  switchRankTab('power'); 
-};
-
+window.openHomeModal = function() { document.getElementById('profName').innerText = state.name; document.getElementById('profId').innerText = playerId; document.getElementById('profReincarnate').innerText = `轮回 ${state.reincarnateCount||0} 次`; document.getElementById('homeModal').style.display = 'flex'; switchRankTab('power'); };
 window.switchRankTab = function(type) {
   document.querySelectorAll('.rank-tab button').forEach(b => b.classList.remove('active')); event.target.classList.add('active');
   const listEl = document.getElementById('rankList'); listEl.innerHTML = '加载中...';
   const players = Object.values(allOnlinePlayers);
-  if (type === 'power') players.sort((a,b) => safeNum(b.totalPower,0) - safeNum(a.totalPower,0)); // 注意这里使用预先计算好的战力
+  if (type === 'power') players.sort((a,b) => safeNum(b.totalPower,0) - safeNum(a.totalPower,0));
   else if (type === 'level') players.sort((a,b) => safeNum(b.charLevel,0) - safeNum(a.charLevel,0));
   
   listEl.innerHTML = '';
@@ -406,49 +387,8 @@ window.switchRankTab = function(type) {
     let valueStr = type === 'power' ? `战力 ${fmt(p.totalPower || p.atk)}` : `Lv.${fmt(p.charLevel)}`;
     let rankColor = index === 0 ? '#ffd700' : (index === 1 ? '#c0c0c0' : (index === 2 ? '#cd7f32' : '#888'));
     div.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><span style="color:${rankColor}; font-weight:900; width:20px;">${index+1}</span><span style="color:#fff;">${p.name || '无名'}</span></div><span style="color:#00c6ff; font-weight:bold;">${valueStr}</span>`;
-    if (p.playerId !== playerId) {
-      div.innerHTML += `<button onclick="addFriend('${p.playerId}')" style="padding:4px 8px; background:rgba(0,198,255,0.2); border:1px solid #00c6ff; color:#00c6ff; border-radius:6px; font-size:10px; margin-left:10px;">加好友</button>`;
-    }
     listEl.appendChild(div);
   });
-};
-
-window.addFriend = function(friendId) {
-  if (!state.friends) state.friends = [];
-  if (state.friends.includes(friendId)) return toast('已经是好友了');
-  state.friends.push(friendId);
-  toast('好友申请已发送'); saveState();
-};
-
-window.showFriends = function() {
-  const listEl = document.getElementById('rankList'); listEl.innerHTML = '';
-  if (!state.friends || state.friends.length === 0) { listEl.innerHTML = '暂无好友'; return; }
-  state.friends.forEach(fId => {
-    const f = allOnlinePlayers[fId];
-    if (f) {
-      const div = document.createElement('div'); div.className = 'rank-item';
-      div.innerHTML = `<span>${f.name}</span><button onclick="giveGift('${fId}')" style="padding:4px 8px; background:rgba(52,199,89,0.2); border:1px solid #30d158; color:#30d158; border-radius:6px; font-size:10px;">赠送仙桃</button>`;
-      listEl.appendChild(div);
-    }
-  });
-};
-window.giveGift = function(fId) {
-  const amt = prompt('赠送仙桃数量：', '100');
-  if (!amt || isNaN(amt) || state.peaches < amt) return toast('仙桃不足');
-  state.peaches -= parseInt(amt);
-  update(ref(db, 'game_players/' + fId), { peaches: (allOnlinePlayers[fId].peaches || 0) + parseInt(amt) });
-  toast('赠送成功！'); renderAll(); saveState();
-};
-
-// ===== 轮回与天赋 =====
-window.doReincarnate = function() {
-  if (state.realm < 10) return toast('境界需达到真仙以上才能轮回');
-  if (!confirm('轮回将重置境界、等级、仙树和仙术，但会获得轮回天赋点（永久增加全属性），确定吗？')) return;
-  state.reincarnateCount = (state.reincarnateCount || 0) + 1;
-  state.talentPoints = (state.talentPoints || 0) + 5;
-  state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0;
-  state.treeLevel = 1; state.spells = {}; state.peaches = 20;
-  toast('☯️ 轮回成功！全属性已永久翻倍！'); renderAll(); saveState();
 };
 
 window.buyJadeItem = async function(itemType) {
@@ -460,11 +400,7 @@ window.buyJadeItem = async function(itemType) {
   renderAll(); await saveState();
 };
 
-window.exploreRuins = async function() {
-  if (state.jade < 5) return toast('仙玉不足');
-  state.jade -= 5; const eq = genEquipment(state.treeLevel + 30); state.inventory.push(eq); toast(`🏛️ 遗迹掉落：${QUALITY_NAMES[eq.quality]}`);
-  renderAll(); saveState();
-};
+window.exploreRuins = async function() { if (state.jade < 5) return toast('仙玉不足'); state.jade -= 5; const eq = genEquipment(state.treeLevel + 30); state.inventory.push(eq); toast(`🏛️ 遗迹掉落：${QUALITY_NAMES[eq.quality]}`); renderAll(); saveState(); };
 
 window.switchAuthTab = function(mode) { document.getElementById('tabLogin').classList.toggle('active', mode==='login'); document.getElementById('tabRegister').classList.toggle('active', mode==='register'); document.getElementById('loginForm').style.display = mode==='login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = mode==='register' ? 'block' : 'none'; document.getElementById('authErr').innerText = ''; };
 function authErr(msg) { document.getElementById('authErr').innerText = msg; }
@@ -505,21 +441,7 @@ async function loadPlayer() {
     
     onValue(ref(db, 'game_players/' + playerId + '/inbox'), (s) => { if (!s.exists()) return; const inbox = s.val(); for (let key in inbox) { const item = inbox[key]; if (!item.claimed) claimInboxItem(key, item); } });
     onValue(ref(db, 'game_config/banned_players/' + playerId), (s) => { if (s.exists()) showBanScreen(s.val()); });
-    
-    // 监听全网玩家（修复战力显示、排行榜）
-    onValue(ref(db, 'game_players'), (s) => { 
-      if (s.exists()) { 
-        allOnlinePlayers = s.val(); 
-        // 给每个玩家临时计算真实战力
-        for (let k in allOnlinePlayers) {
-          const p = allOnlinePlayers[k];
-          allOnlinePlayers[k].playerId = k;
-          let baseP = (p.atk||0) + (p.hp||0)*0.5 + (p.realm||0)*200;
-          let reinc = Math.pow(2, p.reincarnateCount||0);
-          allOnlinePlayers[k].totalPower = baseP * reinc;
-        }
-      } 
-    });
+    onValue(ref(db, 'game_players'), (s) => { if (s.exists()) { allOnlinePlayers = s.val(); for (let k in allOnlinePlayers) { const p = allOnlinePlayers[k]; allOnlinePlayers[k].playerId = k; let baseP = (p.atk||0) + (p.hp||0)*0.5 + (p.realm||0)*200; allOnlinePlayers[k].totalPower = baseP * Math.pow(2, p.reincarnateCount||0); } } });
     
     renderAll(); startTick(); return true;
   } catch (e) { console.error('loadPlayer error', e); authErr('读取存档失败: ' + e.message); return false; }
@@ -534,11 +456,9 @@ function claimInboxItem(key, item) {
   else if (type === 'talentPoints') { state.talentPoints = safeAdd(state.talentPoints, safeNum(payload.amount,0)); toast(`📦 获得轮回天赋点 +${fmt(payload.amount)}`); }
   else if (type === 'sectPoints') { state.sectPoints = safeAdd(state.sectPoints, safeNum(payload.amount,0)); toast(`📦 获得宗门贡献 +${fmt(payload.amount)}`); }
   else if (type === 'equipment') { if (payload.equipment) { if (state.inventory.length >= 500) { state.inventory.sort((a,b) => a.quality - b.quality); const removed = state.inventory.shift(); state.peaches = safeAdd(state.peaches, Math.round(safeMul(safeAdd(removed.atk, removed.hp), safeMul(0.5, removed.quality+1)))); toast(`⚠️ 背包已满，自动分解了1件装备`); } state.inventory.push(payload.equipment); toast(`📦 获得装备`); } }
-  
   update(ref(db, `game_players/${playerId}/inbox/${key}`), { claimed: true }).catch(()=>{}); saveState(); renderAll();
 }
 
-// 修复刷屏问题
 function checkLevelUp() {
   let need = safeMul(100, Math.pow(1.15, safeNum(state.charLevel,1)-1));
   let levelsGained = 0;
@@ -547,7 +467,7 @@ function checkLevelUp() {
     state.charLevel = safeAdd(state.charLevel, 1);
     need = safeMul(100, Math.pow(1.15, state.charLevel-1));
     levelsGained++;
-    if (levelsGained >= 10000) break; // 防止死循环，一次最多升一万级
+    if (levelsGained >= 10000) break; 
   }
   if (levelsGained > 0) toast(`🎉 连升 ${fmt(levelsGained)} 级！当前 Lv.${fmt(state.charLevel)}`);
 }
@@ -568,6 +488,7 @@ function renderAll() {
   document.getElementById('demonKingProgress').innerText = state.demonKingLevel + ' / 10'; document.getElementById('towerProgress').innerText = state.towerLevel + ' / 50';
   document.getElementById('demonKingTickets').innerText = (state.demonTickets||0); document.getElementById('towerTickets').innerText = (state.towerTickets||0);
   document.getElementById('realmDisplay').innerText = (REALM_NAMES[state.realm] || '未知') + ' ' + state.realmLevel + ' 层';
+  document.getElementById('extraDropDisplay').innerText = state.extraDropLevel || 0;
   
   const tuBtn = document.getElementById('upgradeTreeBtn'); const isUpgrading = state.treeUpgradeEnd > Date.now();
   if (isUpgrading) { tuBtn.disabled = true; tuBtn.innerText = `培育中... 剩余 ${formatTime(state.treeUpgradeEnd - Date.now())}`; } else { tuBtn.disabled = false; tuBtn.innerHTML = `培育仙树 (需 ${fmt(treeUpgradeCost(state.treeLevel))} 仙桃)`; }
@@ -614,25 +535,11 @@ window.createSect = function() {
   state.jade -= 100; state.sect = { name, level: 1, creator: playerId };
   toast('🏯 宗门创建成功！'); renderAll(); saveState();
 };
-
-window.donateSect = function() {
-  if (!state.sect) return;
-  if (state.peaches < 1000) return toast('仙桃不足1000');
-  state.peaches -= 1000; state.sectPoints = safeAdd(state.sectPoints, 10);
-  toast('捐献成功，宗门贡献 +10'); renderAll(); saveState();
-};
-
+window.donateSect = function() { if (!state.sect) return; if (state.peaches < 1000) return toast('仙桃不足1000'); state.peaches -= 1000; state.sectPoints = safeAdd(state.sectPoints, 10); toast('捐献成功，宗门贡献 +10'); renderAll(); saveState(); };
 function renderSect() {
   const el = document.getElementById('sectInfo');
-  if (state.sect) {
-    el.innerHTML = `宗门：<span style="color:#ffd700;">${state.sect.name}</span> | 贡献：<span style="color:#30d158;">${fmt(state.sectPoints||0)}</span>`;
-    document.getElementById('btnCreateSect').style.display = 'none';
-    document.getElementById('btnDonateSect').style.display = 'block';
-  } else {
-    el.innerHTML = '尚未加入任何宗门。';
-    document.getElementById('btnCreateSect').style.display = 'block';
-    document.getElementById('btnDonateSect').style.display = 'none';
-  }
+  if (state.sect) { el.innerHTML = `宗门：<span style="color:#ffd700;">${state.sect.name}</span> | 贡献：<span style="color:#30d158;">${fmt(state.sectPoints||0)}</span>`; document.getElementById('btnCreateSect').style.display = 'none'; document.getElementById('btnDonateSect').style.display = 'block'; } 
+  else { el.innerHTML = '尚未加入任何宗门。'; document.getElementById('btnCreateSect').style.display = 'block'; document.getElementById('btnDonateSect').style.display = 'none'; }
 }
 
 function renderSpells() {
@@ -660,8 +567,10 @@ function renderInventory() {
   const el = document.getElementById('inventoryList'); el.innerHTML = ''; document.getElementById('invCount').innerText = state.inventory.length;
   if (state.inventory.length === 0) { el.innerHTML = '<div style="color:#666;text-align:center;padding:20px;font-size:13px;">背包空空，去砍树吧</div>'; return; }
   const sorted = [...state.inventory].sort((a,b) => b.quality - a.quality);
-  sorted.slice(0, 100).forEach(eq => { // 只渲染前100件防止卡顿
-    const realIdx = state.inventory.indexOf(eq); const div = document.createElement('div'); div.className = 'inv-item'; div.style.borderColor = QUALITY_COLORS[eq.quality]; div.innerHTML = `<div style="color:${QUALITY_COLORS[eq.quality]};font-weight:bold;font-size:13px;">${QUALITY_NAMES[eq.quality]} · ${PART_NAMES[eq.part]}</div><div style="font-size:12px;color:#aaa;">攻+${fmt(eq.atk)} 血+${fmt(eq.hp)}</div><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="equipItem(${realIdx})" style="flex:1;padding:6px;background:rgba(0,198,255,0.2);color:#00c6ff;border-radius:6px;font-size:12px;">穿戴</button><button onclick="decomposeItem(${realIdx})" style="flex:1;padding:6px;background:rgba(255,149,0,0.2);color:#ff9500;border-radius:6px;font-size:12px;">分解</button></div>`; el.appendChild(div);
+  sorted.slice(0, 100).forEach(eq => { 
+    const realIdx = state.inventory.indexOf(eq); const div = document.createElement('div'); div.className = 'inv-item'; div.style.borderColor = QUALITY_COLORS[eq.quality]; 
+    div.innerHTML = `<div style="color:${QUALITY_COLORS[eq.quality]};font-weight:bold;font-size:13px;">${QUALITY_NAMES[eq.quality]} · ${PART_NAMES[eq.part]}</div><div style="font-size:12px;color:#aaa;">攻+${fmt(eq.atk)} 血+${fmt(eq.hp)}</div><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="equipItem(${realIdx})" style="flex:1;padding:6px;background:rgba(0,198,255,0.2);color:#00c6ff;border-radius:6px;font-size:12px;">穿戴</button><button onclick="reforgeItem(${realIdx})" style="flex:1;padding:6px;background:rgba(156,39,176,0.2);color:#ce93d8;border-radius:6px;font-size:12px;">洗练</button><button onclick="decomposeItem(${realIdx})" style="flex:1;padding:6px;background:rgba(255,149,0,0.2);color:#ff9500;border-radius:6px;font-size:12px;">分解</button></div>`; 
+    el.appendChild(div);
   });
 }
 
@@ -678,7 +587,7 @@ window.chopTree = async function() {
   chopCooldown = true; state.peaches = safeAdd(state.peaches, -1); const btn = document.getElementById('chopBtn'); btn.style.transform = 'scale(0.9)'; setTimeout(() => btn.style.transform = 'scale(1)', 100);
   state.totalChops = safeAdd(state.totalChops, 1);
   
-  // 掉落机制：默认1件，幸运额外1件。如果有天赋点加成，额外掉
+  // 默认 1 件，天赋点加成额外件数
   let dropCount = 1 + (state.extraDropLevel || 0);
   for (let i = 0; i < dropCount; i++) {
     const eq = genEquipment(state.treeLevel);
@@ -695,18 +604,11 @@ window.chopTree = async function() {
   renderAll(); await saveState(); setTimeout(() => chopCooldown = false, 300);
 };
 
-// 纯数学分解，防卡死
 window.batchDecompose = async function() {
   if (state.inventory.length === 0) return toast('背包为空');
   let gain = 0; let count = state.inventory.length;
-  for (let i = 0; i < count; i++) {
-    const eq = state.inventory[i];
-    gain += Math.round((eq.atk + eq.hp) * 0.5 * (eq.quality + 1));
-  }
-  state.inventory = []; 
-  state.peaches = safeAdd(state.peaches, gain); 
-  toast(`瞬间分解了 ${fmt(count)} 件装备，获得 ${fmt(gain)} 仙桃`);
-  renderAll(); await saveState();
+  for (let i = 0; i < count; i++) { const eq = state.inventory[i]; gain += Math.round((eq.atk + eq.hp) * 0.5 * (eq.quality + 1)); }
+  state.inventory = []; state.peaches = safeAdd(state.peaches, gain); toast(`瞬间分解了 ${fmt(count)} 件装备，获得 ${fmt(gain)} 仙桃`); renderAll(); await saveState();
 };
 
 window.batchSmelt = async function() {
@@ -715,8 +617,15 @@ window.batchSmelt = async function() {
   let newInv = []; let crafted = 0;
   for (let q in groups) { let arr = groups[q]; let times = Math.floor(arr.length / 3); crafted += times; for(let i=0; i<times; i++){ newInv.push(genEquipment(state.treeLevel + 10)); } for(let i=times*3; i<arr.length; i++){ newInv.push(arr[i]); } }
   if (crafted === 0) return toast('没有凑齐3件的同品质装备');
-  state.inventory = newInv; toast(`熔炼成功！合成了 ${fmt(crafted)} 件新装备`);
-  renderAll(); await saveState();
+  state.inventory = newInv; toast(`熔炼成功！合成了 ${fmt(crafted)} 件新装备`); renderAll(); await saveState();
+};
+
+// ===== 天赋点功能 =====
+window.buyExtraDrop = async function() {
+  const cost = (state.extraDropLevel || 0) + 1;
+  if (safeNum(state.talentPoints, 0) < cost) return toast(`天赋点不足，需要 ${cost} 点`);
+  state.talentPoints -= cost; state.extraDropLevel = (state.extraDropLevel || 0) + 1;
+  toast(`🪓 天赋升级！砍树额外掉落 +1 件 (当前 +${state.extraDropLevel})`); renderAll(); await saveState();
 };
 
 window.upgradeTree = async function() { if (state.treeUpgradeEnd > Date.now()) return toast('仙树正在培育中'); const cost = treeUpgradeCost(state.treeLevel); if (safeNum(state.peaches,0) < cost) return toast(`仙桃不足`); state.peaches = safeAdd(state.peaches, -cost); state.treeUpgradeEnd = Date.now() + treeUpgradeTime(state.treeLevel); toast(`🌱 开始培育`); renderAll(); await saveState(); };
@@ -727,8 +636,19 @@ window.equipItem = async function(idx) { const eq = state.inventory[idx]; if (!e
 window.unequip = async function(part) { const eq = state.equipment[part]; if (!eq) return; state.inventory.push(eq); state.equipment[part] = null; renderAll(); await saveState(); };
 window.decomposeItem = async function(idx) { const eq = state.inventory[idx]; if (!eq) return; const gain = Math.round(safeMul(safeAdd(eq.atk, eq.hp), safeMul(0.5, eq.quality+1))); state.peaches = safeAdd(state.peaches, gain); state.inventory.splice(idx, 1); toast(`分解获得 ${fmt(gain)} 仙桃`); renderAll(); await saveState(); };
 window.enhanceItem = async function(part) { const eq = state.equipment[part]; if (!eq) return; if (safeNum(eq.enhance,0) >= 15) return toast('已满强化'); const cost = Math.min(safeClampInf(safeMul(safeMul(50, safeNum(eq.enhance,0)+1), eq.quality+1)), 1e15); if (safeNum(state.peaches,0) < cost) return toast(`仙桃不足`); state.peaches = safeAdd(state.peaches, -cost); if (Math.random() < Math.max(0.3, 0.95 - safeNum(eq.enhance,0) * 0.05)) { eq.enhance = safeAdd(eq.enhance, 1); toast(`✨ 强化成功 +${eq.enhance}`); } else toast('💥 强化失败'); renderAll(); await saveState(); };
+window.reforgeItem = async function(idx) {
+  const eq = state.inventory[idx]; if (!eq) return; const cost = Math.min(safeClampInf(safeMul(100, eq.quality+1)), 1e15);
+  if (safeNum(state.peaches,0) < cost) return toast(`需 ${fmt(cost)} 仙桃`); state.peaches = safeAdd(state.peaches, -cost); eq.atk = Math.round(safeMul(eq.atk, 0.8 + Math.random() * 0.5)); eq.hp = Math.round(safeMul(eq.hp, 0.8 + Math.random() * 0.5)); toast(`🔮 洗练完成`); renderAll(); await saveState();
+};
 window.equipPet = async function(i) { state.pets.equipped = state.pets.equipped === i ? null : i; renderAll(); await saveState(); };
 window.equipSpirit = async function(i) { state.spirits.equipped = state.spirits.equipped === i ? null : i; renderAll(); await saveState(); };
+window.doReincarnate = function() {
+  if (state.realm < 10) return toast('境界需达到真仙以上才能轮回');
+  if (!confirm('轮回将重置境界、等级、仙树和仙术，但会获得轮回天赋点（永久增加全属性），确定吗？')) return;
+  state.reincarnateCount = (state.reincarnateCount || 0) + 1; state.talentPoints = (state.talentPoints || 0) + 5;
+  state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0; state.treeLevel = 1; state.spells = {}; state.peaches = 20;
+  toast('☯️ 轮回成功！'); renderAll(); saveState();
+};
 
 async function autoBattle(enemyAtk, enemyHp, containerId) {
   const stats = calcStats(); let myHp = safeNum(stats.hp, 1); let eHp = safeNum(enemyHp, 1); let rounds = 0;
@@ -745,7 +665,7 @@ async function autoBattle(enemyAtk, enemyHp, containerId) {
 }
 
 window.challengeDemonKing = async function() { if ((state.demonTickets||0) <= 0) return toast('次数不足'); const level = state.demonKingLevel + 1; if (level > 10) return toast('已通关'); const enemyHp = safeMul(200, Math.pow(1.5, level)); const enemyAtk = safeMul(15, Math.pow(1.4, level)); state.demonTickets = safeAdd(state.demonTickets, -1); document.getElementById('demonKingBtn').disabled = true; const result = await autoBattle(enemyAtk, enemyHp, 'demonKingBattle'); if (result.win) { state.demonKingLevel = level; const reward = randInt(20, 40) * level; state.peaches = safeAdd(state.peaches, reward); toast(`🏆 通关！仙桃+${fmt(reward)}`); } else toast('💀 失败'); document.getElementById('demonKingBtn').disabled = false; document.getElementById('demonKingBattle').style.display = 'none'; renderAll(); await saveState(); };
-window.challengeTower = async function() { if ((state.towerTickets||0) <= 0) return toast('次数不足'); const level = state.towerLevel + 1; if (level > 50) return toast('已通关'); const enemyHp = safeMul(300, Math.pow(1.3, level)); const enemyAtk = safeMul(20, Math.pow(1.25, level)); state.towerTickets = safeAdd(state.towerTickets, -1); document.getElementById('towerBtn').disabled = true; const result = await autoBattle(enemyAtk, enemyHp, 'towerBattle'); if (result.win) { state.towerLevel = level; const reward = randInt(15, 30) * level; state.peaches = safeAdd(state.peaches, reward); toast(`🏆 通关！仙桃+${fmt(reward)}`); } else toast('💀 失败'); document.getElementById('towerBtn').disabled = false; document.getElementById('towerBattle').style.display = 'none'; renderAll(); await saveState(); };
+window.challengeTower = async function() { if ((state.towerTickets||0) <= 0) return toast('次数不足'); const level = state.towerLevel + 1; if (level > 50) return toast('已通关'); const enemyHp = safeMul(300, Math.pow(1.3, level)); const enemyAtk = safeMul(20, Math.pow(1.25, level)); state.towerTickets = safeAdd(state.towerTickets, -1); document.getElementById('towerBtn').disabled = true; const result = await autoBattle(enemyAtk, enemyHp, 'towerBattle'); if (result.win) { state (.towerLevel = level; const reward = randInt(15, 30) * level; state.peaches = safeAdd(state.peaches, reward); toast(`🏆 通关！仙桃+${fmt(reward)}`); } else toast('💀 失败'); document.getElementById('towerBtn').disabled = false; document.getElementById('towerBattle').style.display = 'none'; renderAll(); await saveState(); };
 
 function startTick() {
   if (tickTimer) clearInterval(tickTimer);
@@ -753,7 +673,7 @@ function startTick() {
     if (!state) return; let changed = false;
     if (state.treeUpgradeEnd > 0 && state.treeUpgradeEnd <= Date.now()) { state.treeLevel = safeAdd(state.treeLevel, 1); state.treeUpgradeEnd = 0; toast(`🌳 仙树 Lv.${fmt(state.treeLevel)}`); changed = true; }
     for (let sp of SPELL_DEFS) { const d = state.spells[sp.id]; if (d && d.upgradeEnd > 0 && d.upgradeEnd <= Date.now()) { d.level = safeAdd(d.level, 1); d.upgradeEnd = 0; toast(`📖 ${sp.name} Lv.${fmt(d.level)}`); changed = true; } }
-    if (changed) { renderAll(); await saveState(); }
+    ifchanged) { renderAll(); await saveState(); }
   }, 1000);
 }
 
