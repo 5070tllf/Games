@@ -73,9 +73,10 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .btn-green { background:linear-gradient(135deg,#30d158,#28a745); color:#000; }
 .btn-orange { background:linear-gradient(135deg,#ff9500,#ff5e00); color:#fff; }
 
-.nav { display:flex; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; overflow-x:auto; -webkit-overflow-scrolling:touch;}
-.nav-btn { flex:1; padding:10px 0; background:none; border:none; color:#888; font-size:10px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:0.2s; min-width:60px;}
-.nav-btn .icon { font-size:20px; }
+/* 移除 overflow-x: auto 以防止 iPad 吞掉点击事件 */
+.nav { display:flex; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; }
+.nav-btn { flex:1; padding:10px 0; background:none; border:none; color:#888; font-size:10px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:0.2s; min-width:40px; }
+.nav-btn .icon { font-size:18px; }
 .nav-btn.active { color:#00c6ff; }
 .nav-btn.active .icon { filter:drop-shadow(0 0 8px #00c6ff); }
 
@@ -313,18 +314,9 @@ function safeMul(a, b) { const r = safeNum(a, 0) * safeNum(b, 0); return !isFini
 function safeClampInf(v) { return (typeof v !== 'number' || isNaN(v)) ? 0 : (v === Infinity ? MAX_SAFE : (v === -Infinity ? 0 : v)); }
 function fmt(v) { v = safeNum(v, 0); const abs = Math.abs(v); if (abs < 10000) return Math.floor(v).toString(); if (abs < 1e8) return (v/1e4).toFixed(2) + '万'; if (abs < 1e12) return (v/1e8).toFixed(2) + '亿'; if (abs < 1e16) return (v/1e12).toFixed(2) + '万亿'; return `${(v / Math.pow(10, Math.floor(Math.log10(abs)))).toFixed(2)}e${Math.floor(Math.log10(abs))}`; }
 
-// 107个品质（原67个 + 新增40个）
-const QUALITY_NAMES = [
-  '凡品','下品','中品','上品','极品','仙品','神品','至宝','灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝','星辰神石','紫微神石','太初神石','混元道果','天道道果','大道道果','鸿蒙道果','无极道果','太上道果','造化玉碟','混沌珠','盘古斧','东皇钟','太极图','诛仙剑','山河社稷图','炼妖壶','昊天塔','伏羲琴','神农鼎','昆仑镜','崆峒印','凤凰琴','九霄环佩','天问神剑','太虚神甲','大罗天衣','无极仙袍','造化仙袍','鸿蒙仙袍','圣道仙袍','天道仙袍','大道仙袍','混沌至宝','鸿蒙本源','宇宙本源','万物母气','天地玄黄','鸿蒙紫气','大道法则','混沌法则','终极本源',
-  '起源之石','维度结晶','时空沙漏','因果之丝','命运纺锤','虚无之源','创世神剑','灭世黑莲','不朽神座','永恒天舟','星空古路','神话之翼','纪元之书','真理之眼','无尽深渊','璀璨星海','神魔之血','仙帝传承','天道载体','大道仙宫','混元道胎','无极神图','鸿蒙紫府','造化玉盘','太上道剑','混沌神鼎','鸿蒙圣衣','本源神格','宇宙之心','万物母胎','鸿蒙青莲','创世青莲','灭世黑莲','造化青莲','混沌青莲','大道青莲','天道青莲','鸿蒙青莲','虚无青莲','终焉青莲'
-];
-const QUALITY_COLORS = [
-  '#9e9e9e','#4caf50','#2196f3','#9c27b0','#ff9800','#e91e63','#ffeb3b','#ff1744','#00e5ff','#1de9b6','#76ff03','#ffea00','#ff9100','#ff4081','#e040fb','#7c4dff','#536dfe','#448aff','#18ffff','#64ffda','#69f0ae','#b2ff59','#eeff41','#ffff00','#ffd740','#ffab40','#ff6e40','#ff1744','#d50000','#ff4081','#f50057','#e040fb','#aa00ff','#7c4dff','#6200ea','#536dfe','#304ffe','#448aff','#2962ff','#18ffff','#00b8d4','#64ffda','#00bfa5','#69f0ae','#00c853','#b2ff59','#64dd17','#eeff41','#aeea00','#ffff00','#ffd600','#ffd740','#ffc400','#ffab40','#ff9100','#ff6e40','#ff3d00','#ff8a80','#ff5252','#ff1744','#d50000','#ff00ff','#d500f9','#aa00ff','#ffffff',
-  '#ffffff','#e0e0e0','#bdbdbd','#9e9e9e','#757575','#616161','#424242','#212121','#000000','#ff0000','#00ff00','#0000ff','#ffff00','#00ffff','#ff00ff','#ff8000','#8000ff','#00ff80','#ff0080','#80ff00','#0080ff','#ff80ff','#80ffff','#ffff80','#800000','#008000','#000080','#808000','#008080','#800080','#c0c0c0','#ff4500','#32cd32','#1e90ff','#ff69b4','#00ced1','#ffd700','#adff2f','#ff1493','#7fffd4'
-];
-const QUALITY_MULT = [1, 1.5, 2.2, 3.5, 5.5, 9, 15, 25, 40, 60, 90, 130, 180, 250, 350, 500, 700, 1000, 1500, 2200, 3500, 5500, 9000, 15000, 25000, 40000, 70000, 100000, 150000, 220000, 350000, 550000, 900000, 1500000, 2500000, 4000000, 7000000, 10000000, 15000000, 25000000, 40000000, 70000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 50000000000, 100000000000, 500000000000, 1000000000000, 5000000000000, 10000000000000, 50000000000000, 100000000000000, 500000000000000, 1000000000000000, 5000000000000000, 10000000000000000, 50000000000000000, 100000000000000000, 500000000000000000, 1000000000000000000, 5000000000000000000, 10000000000000000000,
-  2e19, 5e19, 1e20, 2e20, 5e20, 1e21, 2e21, 5e21, 1e22, 2e22, 5e22, 1e23, 2e23, 5e23, 1e24, 2e24, 5e24, 1e25, 2e25, 5e25, 1e26, 2e26, 5e26, 1e27, 2e27, 5e27, 1e28, 2e28, 5e28, 1e29, 2e29, 5e29, 1e30, 2e30, 5e30, 1e31, 2e31, 5e31, 1e32, 5e32
-];
+const QUALITY_NAMES = ['凡品','下品','中品','上品','极品','仙品','神品','至宝','灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝','星辰神石','紫微神石','太初神石','混元道果','天道道果','大道道果','鸿蒙道果','无极道果','太上道果','造化玉碟','混沌珠','盘古斧','东皇钟','太极图','诛仙剑','山河社稷图','炼妖壶','昊天塔','伏羲琴','神农鼎','昆仑镜','崆峒印','凤凰琴','九霄环佩','天问神剑','太虚神甲','大罗天衣','无极仙袍','造化仙袍','鸿蒙仙袍','圣道仙袍','天道仙袍','大道仙袍','混沌至宝','鸿蒙本源','宇宙本源','万物母气','天地玄黄','鸿蒙紫气','大道法则','混沌法则','终极本源','起源之石','维度结晶','时空沙漏','因果之丝','命运纺锤','虚无之源','创世神剑','灭世黑莲','不朽神座','永恒天舟','星空古路','神话之翼','纪元之书','真理之眼','无尽深渊','璀璨星海','神魔之血','仙帝传承','天道载体','大道仙宫','混元道胎','无极神图','鸿蒙紫府','造化玉盘','太上道剑','混沌神鼎','鸿蒙圣衣','本源神格','宇宙之心','万物母胎','鸿蒙青莲','创世青莲','灭世黑莲','造化青莲','混沌青莲','大道青莲','天道青莲','鸿蒙青莲','虚无青莲','终焉青莲'];
+const QUALITY_COLORS = ['#9e9e9e','#4caf50','#2196f3','#9c27b0','#ff9800','#e91e63','#ffeb3b','#ff1744','#00e5ff','#1de9b6','#76ff03','#ffea00','#ff9100','#ff4081','#e040fb','#7c4dff','#536dfe','#448aff','#18ffff','#64ffda','#69f0ae','#b2ff59','#eeff41','#ffff00','#ffd740','#ffab40','#ff6e40','#ff1744','#d50000','#ff4081','#f50057','#e040fb','#aa00ff','#7c4dff','#6200ea','#536dfe','#304ffe','#448aff','#2962ff','#18ffff','#00b8d4','#64ffda','#00bfa5','#69f0ae','#00c853','#b2ff59','#64dd17','#eeff41','#aeea00','#ffff00','#ffd600','#ffd740','#ffc400','#ffab40','#ff9100','#ff6e40','#ff3d00','#ff8a80','#ff5252','#ff1744','#d50000','#ff00ff','#d500f9','#aa00ff','#ffffff','#e0e0e0','#bdbdbd','#9e9e9e','#757575','#616161','#424242','#212121','#000000','#ff0000','#00ff00','#0000ff','#ffff00','#00ffff','#ff00ff','#ff8000','#8000ff','#00ff80','#ff0080','#80ff00','#0080ff','#ff80ff','#80ffff','#ffff80','#800000','#008000','#000080','#808000','#008080','#800080','#c0c0c0','#ff4500','#32cd32','#1e90ff','#ff69b4','#00ced1','#ffd700','#adff2f','#ff1493','#7fffd4'];
+const QUALITY_MULT = [1, 1.5, 2.2, 3.5, 5.5, 9, 15, 25, 40, 60, 90, 130, 180, 250, 350, 500, 700, 1000, 1500, 2200, 3500, 5500, 9000, 15000, 25000, 40000, 70000, 100000, 150000, 220000, 350000, 550000, 900000, 1500000, 2500000, 4000000, 7000000, 10000000, 15000000, 25000000, 40000000, 70000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 50000000000, 100000000000, 500000000000, 1000000000000, 5000000000000, 10000000000000, 50000000000000, 100000000000000, 500000000000000, 1000000000000000, 5000000000000000, 10000000000000000, 50000000000000000, 100000000000000000, 500000000000000000, 1000000000000000000, 5000000000000000000, 10000000000000000000,2e19, 5e19, 1e20, 2e20, 5e20, 1e21, 2e21, 5e21, 1e22, 2e22, 5e22, 1e23, 2e23, 5e23, 1e24, 2e24, 5e24, 1e25, 2e25, 5e25, 1e26, 2e26, 5e26, 1e27, 2e27, 5e27, 1e28, 2e28, 5e28, 1e29, 2e29, 5e29, 1e30, 2e30, 5e30, 1e31, 2e31, 5e31, 1e32, 5e32];
 const PART_NAMES = { weapon:'武器', helmet:'头盔', armor:'护甲', boots:'靴子', ring:'戒指', necklace:'项链', belt:'腰带', artifact:'法宝' };
 const PART_KEYS = ['weapon','helmet','armor','boots','ring','necklace','belt','artifact'];
 const REALM_NAMES = ['炼气','筑基','金丹','元婴','化神','炼虚','合体','大乘','渡劫','真仙','玄仙','地仙','天仙','金仙','大罗金仙','混元大罗金仙','准圣','圣人','天道圣人','大道圣人','鸿蒙圣人','造化圣人','混元圣人','无极圣人','太上圣人','混沌圣人','鸿蒙主宰','大道主宰','无极大道','太初大道','太易大道','太始大道','太素大道','太极大道','混元无极大罗金仙','混元太上无极金仙','混元太初无上金仙','混元太易无上金仙','混元太始无上金仙','混元太素无上金仙','混元太极无上金仙','混元太极大罗金仙','混元无极太上金仙','混元无上太初金仙','混元无上太易金仙','混元无上太始金仙','混元无上太素金仙','混元无上太极金仙','混元无极天道圣人','混元无上大道圣人','混元无极鸿蒙圣人','混元无上造化圣人','混元无极混元圣人','混元无上无极圣人','混元无极太上圣人','混元无上混沌圣人','混元无极鸿蒙主宰','混元无上大道主宰','混元无极无极大道','太上无极混元无上大道','太上无极混元无上天道','太上无极混元无上鸿蒙','太上无极混元无上造化','太上无极混元无上混沌','太上无极混元无上本源','太上无极混元无上终极','大道本源无上主宰','鸿蒙本源无上主宰','混沌本源无上主宰','宇宙本源无上主宰','万物本源无上主宰','终极本源无上主宰'];
@@ -660,6 +652,34 @@ window.buyJadeItem = async function(itemType) { let cost = itemType === 'hourgla
   renderAll(); await saveState(); };
 window.exploreRuins = async function() { if (state.jade < 5) return toast('仙玉不足'); state.jade -= 5; const eq = genEquipment(state.treeLevel + 30); state.inventory.push(eq); toast(`🏛️ 遗迹掉落：${QUALITY_NAMES[eq.quality]}`); renderAll(); saveState(); };
 window.donateSect = function() { if (!state.sect) return; if (state.peaches < 1000) return toast('仙桃不足1000'); state.peaches -= 1000; state.sectPoints = safeAdd(state.sectPoints, 10); toast('捐献成功，宗门贡献 +10'); renderAll(); saveState(); };
+
+// 修复购买礼包没反应
+window.buyGift = async function(giftId) {
+  try {
+    if ((state.boughtGifts||[]).includes(giftId)) return toast('已经买过了');
+    const g = globalGifts.find(x => x.id === giftId);
+    if (!g) return toast('礼包数据丢失');
+    
+    if (g.currency === 'jade' && safeNum(state.jade,0) < g.cost) return toast('💎 仙玉不足');
+    if (g.currency === 'peaches' && safeNum(state.peaches,0) < g.cost) return toast('🍑 仙桃不足');
+    
+    if (g.currency === 'jade') state.jade -= g.cost; else state.peaches -= g.cost;
+    if(!state.boughtGifts) state.boughtGifts = [];
+    state.boughtGifts.push(giftId);
+    
+    if (g.items && Array.isArray(g.items)) {
+      g.items.forEach(item => {
+        if (item.type === 'peaches') state.peaches = safeAdd(state.peaches, item.amount);
+        else if (item.type === 'jade') state.jade = safeAdd(state.jade, item.amount);
+        else if (item.type === 'exp') { state.exp = safeAdd(state.exp, item.amount); checkLevelUp(); }
+        else if (item.type === 'equipment' && item.eq) state.inventory.push(item.eq);
+      });
+    }
+    toast('🎉 抢购成功！'); renderAll(); await saveState();
+  } catch (err) {
+    alert("购买出错: " + err.message);
+  }
+};
 
 async function autoBattle(enemyAtk, enemyHp, containerId) {
   const stats = calcStats(); let myHp = safeNum(stats.hp, 1); let eHp = safeNum(enemyHp, 1); let rounds = 0;
