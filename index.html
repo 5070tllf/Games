@@ -358,6 +358,36 @@ const SPIRIT_HP = [30,100,300,800,2000,5000,10000,20000,50000,100000,200000,5000
 
 const SPELL_DEFS = [{ id:'sword', name:'御剑术', desc:'提升攻击', stat:'atk', per:5 },{ id:'flame', name:'烈焰诀', desc:'提升暴击率', stat:'critRate', per:0.005 },{ id:'ice', name:'寒冰咒', desc:'提升暴伤', stat:'critDmg', per:0.05 },{ id:'shield', name:'金刚罩', desc:'提升气血', stat:'hp', per:20 },{ id:'wind', name:'疾风步', desc:'提升幸运', stat:'luck', per:1 },{ id:'heal', name:'回春术', desc:'提升气血', stat:'hp', per:15 }];
 
+// ===== 缺失的核心函数补充（修复登录报错的元凶） =====
+function treeUpgradeCost(level) {
+    let cost = safeMul(50, Math.pow(1.5, safeNum(level, 1) - 1));
+    return Math.min(safeClampInf(cost), 1e18);
+}
+
+function treeUpgradeTime(level) {
+    let seconds = 5 + safeNum(level, 1) * 2;
+    return Math.min(seconds * 1000, 24 * 60 * 60 * 1000);
+}
+
+function getSpellData(spellId) {
+    if (!state.spells) state.spells = {};
+    if (!state.spells[spellId]) {
+        state.spells[spellId] = { level: 1, upgradeEnd: 0 };
+    }
+    return state.spells[spellId];
+}
+
+function spellUpgradeCost(level) {
+    let cost = safeMul(1000, Math.pow(2, safeNum(level, 1)));
+    return Math.min(safeClampInf(cost), 1e18);
+}
+
+function spellUpgradeTime(level) {
+    let seconds = 10 + safeNum(level, 1) * 10;
+    return Math.min(seconds * 1000, 24 * 60 * 60 * 1000);
+}
+// ==============================================
+
 function getQualityWeights(treeLevel) { treeLevel = safeNum(treeLevel, 1); let maxQ = Math.min(106, Math.floor(treeLevel / 2)); let w = new Array(107).fill(0); if (maxQ === 0) maxQ = 1; for (let i = 0; i <= maxQ; i++) w[i] = Math.max(1, 50 - Math.abs(i - maxQ) * 5); return w; }
 function rollQuality(treeLevel) { const w = getQualityWeights(treeLevel); const total = w.reduce((a,b)=>a+b,0); let r = Math.random() * total; for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return i; } return 0; }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
