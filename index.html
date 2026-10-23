@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>砍树修仙</title>
+<title>寻道 · 砍树修仙</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#0a0a0f; color:#fff; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; position:relative; }
@@ -242,7 +242,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <button class="big-btn btn-jade" onclick="buyJadeItem('pet')">🐾 极品灵兽盲盒 - 10仙玉</button>
         <button class="big-btn btn-jade" onclick="buyJadeItem('spirit')">👻 极品精怪盲盒 - 10仙玉</button>
         <button class="big-btn btn-jade" onclick="buyJadeItem('pill')">💊 随机仙丹盲盒 - 20仙玉</button>
-        <button class="big-btn btn-purple" onclick="buyAscensionPill()">💊 购买飞升丹 (飞升成功率+1%可叠加) - 1亿仙玉</button>
+        <button class="big-btn btn-purple" onclick="buyAscensionPill()">💊 购买飞升丹 (飞升成功率+1%可叠加) - 100仙玉</button>
       </div>
       <div class="card">
         <div class="card-title">🛒 仙桃杂货铺</div>
@@ -773,14 +773,37 @@ window.claimMail = async function(idx) {
   
   if (m.attachments) {
       const a = m.attachments;
-      // ...（包含数量判断的新逻辑）...
+      if (a.jade) state.jade = safeAdd(state.jade, a.jade);
+      if (a.peaches) state.peaches = safeAdd(state.peaches, a.peaches);
+      if (a.exp) { state.exp = safeAdd(state.exp, a.exp); checkLevelUp(); }
+      if (a.talentPoints) state.talentPoints = safeAdd(state.talentPoints, a.talentPoints);
+      if (a.sectPoints) state.sectPoints = safeAdd(state.sectPoints, a.sectPoints);
+      
+      if (a.ascensionPill) {
+          if (!state.pillBuffs) state.pillBuffs = {};
+          state.pillBuffs.ascensionBonus = safeNum(state.pillBuffs.ascensionBonus, 0) + a.ascensionPill;
+      }
+      
+      if (a.pill) { 
+          let count = a.pill.count || 1;
+          for(let i=0; i<count; i++) state.pills.push({ type: a.pill.type }); 
+      }
+      
+      if (a.pet) { for(let i=0; i<a.pet; i++) { let p = randInt(0, 19); if(!state.pets.owned.includes(p)) state.pets.owned.push(p); } }
+      if (a.spirit) { for(let i=0; i<a.spirit; i++) { let s = randInt(0, 19); if(!state.spirits.owned.includes(s)) state.spirits.owned.push(s); } }
+      
+      if (a.equipment) { 
+          let count = a.equipment.count || 1;
+          if(!state.inventory) state.inventory=[];
+          for(let i=0; i<count; i++) {
+              let eq = genEquipment(state.treeLevel + 20, a.equipment.quality); 
+              state.inventory.push(eq); 
+          }
+      }
   }
   
-  m.claimed = true; 
-  state.mail = Object.values(mailArray);
-  toast('领取成功'); 
-  renderAll(); 
-  await saveState(); 
+  m.claimed = true; state.mail = Object.values(mailArray);
+  toast('领取成功'); renderAll(); await saveState(); 
 };
 
 window.renderPills = function() { 
