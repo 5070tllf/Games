@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>寻道 · 砍树修仙</title>
+<script>
+  // 防止自动登录时闪烁登录界面
+  if (localStorage.getItem('game_player_id')) {
+    document.documentElement.style.visibility = 'hidden';
+  }
+</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#0a0a0f; color:#fff; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; position:relative; }
@@ -21,7 +27,6 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .auth-tab.active { background:rgba(255,215,0,0.2); color:#ffd700; border:1px solid rgba(255,215,0,0.4); }
 .auth-box input { width:100%; padding:14px; border:1px solid rgba(255,255,255,0.15); border-radius:12px; background:rgba(0,0,0,0.5); color:#fff; outline:none; font-size:16px; margin-bottom:12px; }
 .auth-box button.primary { width:100%; padding:15px; border:none; border-radius:12px; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#000; font-weight:800; font-size:16px; cursor:pointer; margin-bottom:10px; }
-.auth-box button.one-click { width:100%; padding:15px; border:none; border-radius:12px; background:rgba(0,198,255,0.15); color:#00c6ff; border:1px solid rgba(0,198,255,0.4); font-weight:800; font-size:16px; cursor:pointer; display:none; }
 .auth-err { color:#ff3b30; text-align:center; font-size:13px; margin-top:10px; min-height:20px; }
 .header { background:rgba(0,0,0,0.5); backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 12px; flex-shrink:0; }
 .header-row { display:flex; justify-content:space-between; align-items:center; }
@@ -70,6 +75,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .btn-jade { background:linear-gradient(135deg,#00e5ff,#0088ff); color:#fff; }
 .btn-green { background:linear-gradient(135deg,#30d158,#28a745); color:#000; }
 .btn-orange { background:linear-gradient(135deg,#ff9500,#ff5e00); color:#fff; }
+.btn-red { background:linear-gradient(135deg,#ff3b30,#d50000); color:#fff; }
 .nav { display:flex; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; overflow-x:auto; }
 .nav-btn { flex:1; padding:8px 0; background:none; border:none; color:#888; font-size:9px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:0.2s; min-width:48px; }
 .nav-btn .icon { font-size:18px; }
@@ -298,6 +304,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
         <div style="font-size:12px;color:#ffd700;margin-top:4px;" id="profReincarnate">轮回 0 次</div>
         <button class="big-btn btn-blue" style="margin-top:15px; margin-bottom:0;" onclick="openEncyclopedia()">📖 查看全境界 / 图鉴</button>
+        <button class="big-btn btn-red" style="margin-top:10px;" onclick="logout()">退出登录</button>
       </div>
       <div class="card">
         <div class="card-title">当前属性与状态</div>
@@ -747,6 +754,7 @@ window.renderMails = function() {
   let mailArray = [];
   if (state.mail) mailArray = Array.isArray(state.mail) ? state.mail : Object.values(state.mail);
   if (mailArray.length === 0) { el.innerHTML = '<div style="color:#666;font-size:12px;text-align:center;">暂无邮件</div>'; return; } 
+  
   mailArray.forEach((m, idx) => { 
     const div = document.createElement('div'); div.style.cssText = `padding:12px; background:rgba(255,255,255,0.05); border-radius:10px; ${m.claimed ? 'opacity:0.5;' : ''}`; 
     let attDesc = [];
@@ -762,9 +770,32 @@ window.renderMails = function() {
         if (m.attachments.equipment) attDesc.push(`极品装备`);
     }
     let attStr = attDesc.length > 0 ? attDesc.join(', ') : '无';
-    div.innerHTML = `<div style="font-weight:bold;color:#ffd700;margin-bottom:4px;">${m.title}</div><div style="font-size:12px;color:#aaa;margin-bottom:8px;">${m.content}</div><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;color:#00c6ff;">附件: ${attStr}</span><button onclick="claimMail(${idx})" ${m.claimed?'disabled':''} style="padding:4px 8px; background:${m.claimed?'#555':'#30d158'}; color:${m.claimed?'#aaa':'#000'}; border:none; border-radius:6px; font-weight:bold;">${m.claimed?'已领取':'领取'}</button></div>`; 
+    
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <div style="font-weight:bold;color:#ffd700;margin-bottom:4px;">${m.title}</div>
+          <div style="font-size:12px;color:#aaa;margin-bottom:8px;">${m.content}</div>
+        </div>
+        <button onclick="deleteMail(${idx})" style="background:rgba(255,59,48,0.2);color:#ff453a;border:none;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">删除</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;margin-top:8px;">
+        <span style="font-size:11px;color:#00c6ff;">附件: ${attStr}</span>
+        <button onclick="claimMail(${idx})" ${m.claimed?'disabled':''} style="padding:4px 8px; background:${m.claimed?'#555':'#30d158'}; color:${m.claimed?'#aaa':'#000'}; border:none; border-radius:6px; font-weight:bold;">${m.claimed?'已领取':'领取'}</button>
+      </div>
+    `; 
     el.appendChild(div); 
   }); 
+};
+
+window.deleteMail = async function(idx) {
+  if (!confirm("确定要删除这封邮件吗？")) return;
+  let mailArray = Array.isArray(state.mail) ? state.mail : Object.values(state.mail);
+  mailArray.splice(idx, 1);
+  state.mail = mailArray;
+  await update(playerRef, { mail: state.mail });
+  renderAll();
+  toast('邮件已删除');
 };
 
 window.claimMail = async function(idx) { 
@@ -802,8 +833,9 @@ window.claimMail = async function(idx) {
       }
   }
   
-  m.claimed = true; state.mail = Object.values(mailArray);
-  toast('领取成功'); renderAll(); await saveState(); 
+  m.claimed = true; state.mail = mailArray;
+  await update(playerRef, { mail: state.mail });
+  toast('领取成功'); renderAll(); 
 };
 
 window.renderPills = function() { 
@@ -1091,7 +1123,23 @@ window.doRegister = async function() { try { const name = document.getElementByI
 window.doLogin = async function() { try { const input = document.getElementById('loginName').value.trim(); const pwd = document.getElementById('loginPwd').value; if (!input || !pwd) return authErr('请输入账号和密码'); document.getElementById('loading').style.display = 'flex'; document.getElementById('loadingText').innerText = '正在登录...'; let accountData = null; const byName = await get(ref(db, 'game_accounts/' + input)); if (byName.exists()) accountData = byName.val(); else { const all = await get(ref(db, 'game_accounts')); if (all.exists()) { const accs = all.val(); for (let name in accs) { if (accs[name].playerId === input) { accountData = accs[name]; break; } } } } if (!accountData) { document.getElementById('loading').style.display = 'none'; return authErr('账号不存在'); } if (accountData.password !== btoa(pwd)) { document.getElementById('loading').style.display = 'none'; return authErr('密码错误'); } localStorage.setItem('game_player_id', accountData.playerId); localStorage.setItem('game_player_name', accountData.name); playerId = accountData.playerId; playerName = accountData.name; await afterLogin(); } catch (e) { document.getElementById('loading').style.display = 'none'; authErr('登录失败: ' + e.message); } };
 async function afterLogin() { document.getElementById('authScreen').style.display = 'none'; const ok = await loadPlayer(); document.getElementById('loading').style.display = 'none'; if (ok) document.getElementById('app').style.display = 'flex'; else document.getElementById('authScreen').style.display = 'flex'; }
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+window.logout = function() {
+    if(confirm('确定要退出登录吗？')){
+        localStorage.removeItem('game_player_id');
+        localStorage.removeItem('game_player_name');
+        location.reload();
+    }
+};
+
+// 【核心】启动逻辑：有缓存直接免密登录
+window.addEventListener('load', () => {
+    if (playerId && playerName) {
+        showScreen('app');
+        boot();
+    } else {
+        boot();
+    }
+});
 </script>
 </body>
 </html>
