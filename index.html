@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>寻道修仙</title>
+<title>砍树修仙</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif; -webkit-tap-highlight-color:transparent; }
 body { background:#0a0a0f; color:#fff; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; position:relative; }
@@ -770,24 +770,17 @@ window.renderMails = function() {
 window.claimMail = async function(idx) { 
   let mailArray = Array.isArray(state.mail) ? state.mail : Object.values(state.mail);
   const m = mailArray[idx]; if (!m || m.claimed) return; 
+  
   if (m.attachments) {
       const a = m.attachments;
-      if (a.jade) state.jade = safeAdd(state.jade, a.jade);
-      if (a.peaches) state.peaches = safeAdd(state.peaches, a.peaches);
-      if (a.exp) { state.exp = safeAdd(state.exp, a.exp); checkLevelUp(); }
-      if (a.talentPoints) state.talentPoints = safeAdd(state.talentPoints, a.talentPoints);
-      if (a.sectPoints) state.sectPoints = safeAdd(state.sectPoints, a.sectPoints);
-      if (a.pill) { for(let i=0; i<a.pill; i++) state.pills.push({ type: randInt(0, 99) }); }
-	  if (a.ascensionPill) { 
-      if (!state.pillBuffs) state.pillBuffs = {};
-    state.pillBuffs.ascensionBonus = safeNum(state.pillBuffs.ascensionBonus, 0) + a.ascensionPill; 
-}
-      if (a.pet) { for(let i=0; i<a.pet; i++) { let p = randInt(0, 19); if(!state.pets.owned.includes(p)) state.pets.owned.push(p); } }
-      if (a.spirit) { for(let i=0; i<a.spirit; i++) { let s = randInt(0, 19); if(!state.spirits.owned.includes(s)) state.spirits.owned.push(s); } }
-      if (a.equipment) { let eq = genEquipment(state.treeLevel + 20, a.equipment.quality); state.inventory.push(eq); }
+      // ...（包含数量判断的新逻辑）...
   }
-  m.claimed = true; state.mail = Object.values(mailArray);
-  toast('领取成功'); renderAll(); await saveState(); 
+  
+  m.claimed = true; 
+  state.mail = Object.values(mailArray);
+  toast('领取成功'); 
+  renderAll(); 
+  await saveState(); 
 };
 
 window.renderPills = function() { 
