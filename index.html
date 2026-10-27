@@ -242,7 +242,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
       </div>
       <div class="card">
         <div class="card-title">💎 仙玉专属商城</div>
-        <button class="big-btn btn-jade" onclick="buyJadeItem('hourglass')">⏳ 时光沙漏 (减少10分钟CD) - 1000仙玉</button>
+        <button class="big-btn btn-jade" onclick="buyJadeItem('hourglass')">⏳ 时光沙漏 (减少10分钟CD) - 1仙玉</button>
         <button class="big-btn btn-jade" onclick="buyJadeItem('ticket')">🎫 副本挑战令 (妖王塔次数各+5) - 3仙玉</button>
         <button class="big-btn btn-jade" onclick="buyJadeItem('pet')">🐾 极品灵兽盲盒 - 10仙玉</button>
         <button class="big-btn btn-jade" onclick="buyJadeItem('spirit')">👻 极品精怪盲盒 - 10仙玉</button>
@@ -259,6 +259,19 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <button class="big-btn btn-green" onclick="buyHerb('mid')">🌿 购买中级药材包 (10仙玉)</button>
         <button class="big-btn btn-green" onclick="buyHerb('high')">🌿 购买高级药材包 (50仙玉)</button>
         <button class="big-btn btn-purple" onclick="craftPill()">🔥 一键炼丹 (消耗10药材)</button>
+      </div>
+    </div>
+
+    <div class="page" id="page-alchemy">
+      <div class="card">
+        <div class="card-title">🔮 炼丹炉</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:10px;">请选择3份药材放入炼丹炉。带有灵智的药材，年份加成翻倍，极大概率炼出带有特殊属性的高级丹药！</div>
+        <div id="herbSlots" style="display:flex; justify-content:space-between; margin-bottom:15px;"></div>
+        <button class="big-btn btn-purple" onclick="doManualCraft()">🔥 开炉炼丹</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🌿 我的药材</div>
+        <div id="myHerbList" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
     </div>
 
@@ -305,6 +318,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         </div>
         <button class="big-btn btn-purple" id="btnAscend" onclick="doAscension()" style="display:none;">🚀 飞升到下一个世界</button>
         <button class="big-btn btn-jade" id="btnGoLower" onclick="goLowerWorld()" style="display:block;">🌀 穿梭世界 (消耗1000亿仙玉)</button>
+        <button class="big-btn btn-gold" id="btnGoBack" onclick="goBackToTopWorld()" style="display:none; margin-top:10px;">🌟 回到原本世界 (三千界域)</button>
       </div>
       
       <div class="card">
@@ -383,6 +397,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
     <button class="nav-btn" data-page="equip" onclick="switchPage('equip')"><span class="icon">⚔️</span>装备</button>
     <button class="nav-btn" data-page="map" onclick="switchPage('map')"><span class="icon">🗺️</span>秘境</button>
     <button class="nav-btn" data-page="cultivate" onclick="switchPage('cultivate')"><span class="icon">🧘</span>养成</button>
+    <button class="nav-btn" data-page="alchemy" onclick="switchPage('alchemy')"><span class="icon">🔮</span>炼丹</button>
     <button class="nav-btn" data-page="world" onclick="switchPage('world')"><span class="icon">🌌</span>世界</button>
     <button class="nav-btn" data-page="bag" onclick="switchPage('bag')"><span class="icon">🎒</span>背包</button>
     <button class="nav-btn" data-page="shop" onclick="switchPage('shop')"><span class="icon">🛒</span>商城</button>
@@ -470,20 +485,27 @@ function fmt(v) {
   if (abs < 1e8) return (v/1e4).toFixed(2) + '万'; 
   if (abs < 1e12) return (v/1e8).toFixed(2) + '亿'; 
   if (abs < 1e16) return (v/1e12).toFixed(2) + '万亿'; 
+  if (abs < 1e20) return (v/1e16).toFixed(2) + '京'; 
+  if (abs < 1e24) return (v/1e20).toFixed(2) + '垓'; 
   return `${(v / Math.pow(10, Math.floor(Math.log10(abs)))).toFixed(2)}e${Math.floor(Math.log10(abs))}`; 
 }
 
+// 品质名字扩充到 20 种以上，用于装备和药材
 const QUALITY_NAMES = ['凡品','下品','中品','上品','极品','仙品','神品','至宝','灵宝','玄宝','天宝','圣宝','道宝','尊宝','王宝','皇宝','帝宝','君宝','仙宝','神宝','圣尊宝','道尊宝','天主宝','圣天主宝','道天主宝','混沌至宝','鸿蒙至宝','星辰神石','紫微神石','太初神石','混元道果','天道道果','大道道果','鸿蒙道果','无极道果','太上道果','造化玉碟','混沌珠','盘古斧','东皇钟','太极图','诛仙剑','山河社稷图','炼妖壶','昊天塔','伏羲琴','神农鼎','昆仑镜','崆峒印','凤凰琴','九霄环佩','天问神剑','太虚神甲','大罗天衣','无极仙袍','造化仙袍','鸿蒙仙袍','圣道仙袍','天道仙袍','大道仙袍','混沌至宝','鸿蒙本源','宇宙本源','万物母气','天地玄黄','鸿蒙紫气','大道法则','混沌法则','终极本源','起源之石','维度结晶','时空沙漏','因果之丝','命运纺锤','虚无之源','创世神剑','灭世黑莲','不朽神座','永恒天舟','星空古路','神话之翼','纪元之书','真理之眼','无尽深渊','璀璨星海','神魔之血','仙帝传承','天道载体','大道仙宫','混元道胎','无极神图','鸿蒙紫府','造化玉盘','太上道剑','混沌神鼎','鸿蒙圣衣','本源神格','宇宙之心','万物母胎','鸿蒙青莲','创世青莲','灭世黑莲','造化青莲','混沌青莲','大道青莲','天道青莲','鸿蒙青莲','虚无青莲','终焉青莲'];
 const QUALITY_COLORS = ['#9e9e9e','#4caf50','#2196f3','#9c27b0','#ff9800','#e91e63','#ffeb3b','#ff1744','#00e5ff','#1de9b6','#76ff03','#ffea00','#ff9100','#ff4081','#e040fb','#7c4dff','#536dfe','#448aff','#18ffff','#64ffda','#69f0ae','#b2ff59','#eeff41','#ffff00','#ffd740','#ffab40','#ff6e40','#ff1744','#d50000','#ff4081','#f50057','#e040fb','#aa00ff','#7c4dff','#6200ea','#536dfe','#304ffe','#448aff','#2962ff','#18ffff','#00b8d4','#64ffda','#00bfa5','#69f0ae','#00c853','#b2ff59','#64dd17','#eeff41','#aeea00','#ffff00','#ffd600','#ffd740','#ffc400','#ffab40','#ff9100','#ff6e40','#ff3d00','#ff8a80','#ff5252','#ff1744','#d50000','#ff00ff','#d500f9','#aa00ff','#ffffff','#e0e0e0','#bdbdbd','#9e9e9e','#757575','#616161','#424242','#212121','#000000','#ff0000','#00ff00','#0000ff','#ffff00','#00ffff','#ff00ff','#ff8000','#8000ff','#00ff80','#ff0080','#80ff00','#0080ff','#ff80ff','#80ffff','#ffff80','#800000','#008000','#000080','#808000','#008080','#800080','#c0c0c0','#ff4500','#32cd32','#1e90ff','#ff69b4','#00ced1','#ffd700','#adff2f','#ff1493','#7fffd4'];
 const QUALITY_MULT = [1, 1.5, 2.2, 3.5, 5.5, 9, 15, 25, 40, 60, 90, 130, 180, 250, 350, 500, 700, 1000, 1500, 2200, 3500, 5500, 9000, 15000, 25000, 40000, 70000, 100000, 150000, 220000, 350000, 550000, 900000, 1500000, 2500000, 4000000, 7000000, 10000000, 15000000, 25000000, 40000000, 70000000, 100000000, 200000000, 500000000, 1000000000, 2000000000, 5000000000, 10000000000, 50000000000, 100000000000, 500000000000, 1000000000000, 5000000000000, 10000000000000, 50000000000000, 100000000000000, 500000000000000, 1000000000000000, 5000000000000000, 10000000000000000, 50000000000000000, 100000000000000000, 500000000000000000, 1000000000000000000, 5000000000000000000, 10000000000000000000,2e19, 5e19, 1e20, 2e20, 5e20, 1e21, 2e21, 5e21, 1e22, 2e22, 5e22, 1e23, 2e23, 5e23, 1e24, 2e24, 5e24, 1e25, 2e25, 5e25, 1e26, 2e26, 5e26, 1e27, 2e27, 5e27, 1e28, 2e28, 5e28, 1e29, 2e29, 5e29, 1e30, 2e30, 5e30, 1e31, 2e31, 5e31, 1e32, 5e32];
 const PART_NAMES = { weapon:'武器', helmet:'头盔', armor:'护甲', boots:'靴子', ring:'戒指', necklace:'项链', belt:'腰带', artifact:'法宝' };
 const PART_KEYS = ['weapon','helmet','armor','boots','ring','necklace','belt','artifact'];
 const REALM_NAMES = ['炼气','筑基','金丹','元婴','化神','炼虚','合体','大乘','渡劫','真仙','玄仙','地仙','天仙','金仙','大罗金仙','混元大罗金仙','准圣','圣人','天道圣人','大道圣人','鸿蒙圣人','造化圣人','混元圣人','无极圣人','太上圣人','混沌圣人','鸿蒙主宰','大道主宰','无极大道','太初大道','太易大道','太始大道','太素大道','太极大道','混元无极大罗金仙','混元太上无极金仙','混元太初无上金仙','混元太易无上金仙','混元太始无上金仙','混元太素无上金仙','混元太极无上金仙','混元太极大罗金仙','混元无极太上金仙','混元无上太初金仙','混元无上太易金仙','混元无上太始金仙','混元无上太素金仙','混元无上太极金仙','混元无极天道圣人','混元无上大道圣人','混元无极鸿蒙圣人','混元无上造化圣人','混元无极混元圣人','混元无上无极圣人','混元无极太上圣人','混元无上混沌圣人','混元无极鸿蒙主宰','混元无上大道主宰','混元无极无极大道','太上无极混元无上大道','太上无极混元无上天道','太上无极混元无上鸿蒙','太上无极混元无上造化','太上无极混元无上混沌','太上无极混元无上本源','太上无极混元无上终极','大道本源无上主宰','鸿蒙本源无上主宰','混沌本源无上主宰','宇宙本源无上主宰','万物本源无上主宰','终极本源无上主宰'];
+
+// 宠物/精怪几何级暴增
 const PET_NAMES = ['灵狐','火麒麟','九尾狐','白虎','朱雀','玄武','青龙','穷奇','饕餮','混沌','梼杌','金乌','鲲鹏','凤凰','麒麟','狻猊','睚眦','囚牛','蒲牢','霸下'];
 const SPIRIT_NAMES = ['树精','石灵','剑灵','火灵','水灵','风灵','雷灵','光灵','暗灵','花精','药灵','器灵','符灵','阵灵','傀灵','妖灵','魔灵','仙灵','神灵','圣灵'];
-const PET_ATK = [5,15,40,100,250,500,1000,2000,5000,10000,20000,50000,100000,200000,500000,1000000,2000000,5000000,10000000,50000000];
-const SPIRIT_HP = [30,100,300,800,2000,5000,10000,20000,50000,100000,200000,500000,1000000,2000000,5000000,10000000,20000000,50000000,100000000,500000000];
-const PILL_NAMES = ['聚气丹','洗髓丹','破障丹','筑基丹','凝婴丹','化神丹','炼虚丹','合体丹','大乘丹','渡劫丹','真仙丹','玄仙丹','地仙丹','天仙丹','金仙丹','大罗丹','混元丹','准圣丹','圣人丹','天道丹','大道丹','鸿蒙丹','造化丹','无极丹','太上丹','混沌丹','九转金丹','太乙金丹','大还丹','小还丹','培元丹','凝神丹','补天丹','涅槃丹','生死丹','轮回丹','破界丹','飞升丹','羽化丹','长生丹','驻颜丹','金刚丹','龙力丹','虎魄丹','豹速丹','熊胆丹','鹰眼丹','蛇骨丹','蝎毒丹','蛛丝丹','蟾酥丹','蜈蚣丹','壁虎丹','灵狐丹','火麒丹','九尾丹','白虎丹','朱雀丹','玄武丹','青龙丹','穷奇丹','饕餮丹','混沌丹','梼杌丹','金乌丹','鲲鹏丹','凤凰丹','麒麟丹','狻猊丹','睚眦丹','囚牛丹','蒲牢丹','霸下丹','天雷丹','地火丹','玄冰丹','罡风丹','幽冥丹','纯阳丹','至阴丹','紫气丹','星辰丹','日月丹','造化丹','鸿蒙丹','虚无丹','真实丹','因果丹','命运丹','时空丹','轮回丹','涅槃丹','长生丹','不死丹','万寿丹','无疆丹','无极丹','太极丹','两仪丹','四象丹','八卦丹','九宫丹','十方丹'];
+const PET_ATK = PET_NAMES.map((_, i) => Math.round(10000 * Math.pow(5, i)));
+const SPIRIT_HP = SPIRIT_NAMES.map((_, i) => Math.round(30000 * Math.pow(5, i)));
+
+const PILL_NAMES = ['聚气丹','洗髓丹','破障丹','筑基丹','凝婴丹','化神丹','炼虚丹','合体丹','大乘丹','渡劫丹','真仙丹','玄仙丹','地仙丹','天仙丹','金仙丹','大罗丹','混元丹','准圣丹','圣人丹','天道丹','大道丹','鸿蒙丹','造化丹','无极丹','太上丹','混沌丹','九转金丹','太乙金丹','大还丹','小还丹','培元丹','凝神丹','固本丹','补天丹','涅槃丹','生死丹','轮回丹','破界丹','飞升丹','羽化丹','长生丹','驻颜丹','金刚丹','龙力丹','虎魄丹','豹速丹','熊胆丹','鹰眼丹','蛇骨丹','蝎毒丹','蛛丝丹','蟾酥丹','蜈蚣丹','壁虎丹','灵狐丹','火麒丹','九尾丹','白虎丹','朱雀丹','玄武丹','青龙丹','穷奇丹','饕餮丹','混沌丹','梼杌丹','金乌丹','鲲鹏丹','凤凰丹','麒麟丹','狻猊丹','睚眦丹','囚牛丹','蒲牢丹','霸下丹','天雷丹','地火丹','玄冰丹','罡风丹','幽冥丹','纯阳丹','至阴丹','紫气丹','星辰丹','日月丹','造化丹','鸿蒙丹','虚无丹','真实丹','因果丹','命运丹','时空丹','轮回丹','涅槃丹','长生丹','不死丹','万寿丹','无疆丹','无极丹','太极丹','两仪丹','四象丹','八卦丹','九宫丹','十方丹'];
+
 const SPELL_DEFS = [{ id:'sword', name:'御剑术', desc:'提升攻击', stat:'atk', per:5 },{ id:'flame', name:'烈焰诀', desc:'提升暴击率', stat:'critRate', per:0.005 },{ id:'ice', name:'寒冰咒', desc:'提升暴伤', stat:'critDmg', per:0.05 },{ id:'shield', name:'金刚罩', desc:'提升气血', stat:'hp', per:20 },{ id:'wind', name:'疾风步', desc:'提升幸运', stat:'luck', per:1 },{ id:'heal', name:'回春术', desc:'提升气血', stat:'hp', per:15 }];
 const SECRET_REALMS = [
   { id: 'demon', name: '妖王洞', color: '#ff3b30', tickets: 'demonTickets' },
@@ -526,7 +548,7 @@ function rollQuality(treeLevel) { const w = getQualityWeights(treeLevel); const 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function genEquipment(treeLevel, forceQuality) { treeLevel = safeNum(treeLevel, 1); const part = PART_KEYS[randInt(0, PART_KEYS.length - 1)]; const quality = forceQuality !== undefined ? forceQuality : rollQuality(treeLevel); const mult = QUALITY_MULT[quality] || 1; const base = safeMul(5 + treeLevel * 2, mult); return { id: 'EQ-' + Date.now() + '-' + randInt(1000,9999), part, quality, atk: Math.round(safeMul(base, 0.8 + Math.random()*0.4)), hp: Math.round(safeMul(base, (0.8 + Math.random()*0.4) * 2)), critRate: quality >= 4 ? +(Math.random()*0.03).toFixed(3) : 0, critDmg: quality >= 4 ? +(Math.random()*0.3).toFixed(2) : 0, enhance: 0 }; }
 function genPlayerId() { return 'GAME-' + Math.random().toString(36).substr(2, 9).toUpperCase(); }
-function freshState(name) { return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0 }; }
+function freshState(name) { return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, herbItems: [], demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0 }; }
 
 function realmTrainCost(realm, realmLevel) { let baseCost = safeMul(1000, Math.pow(10, safeNum(realm, 0))); let levelMult = safeNum(realmLevel, 1); return Math.min(safeClampInf(safeMul(baseCost, levelMult)), 1e18); }
 function realmBreakCost(realm, realmLevel) { let baseCost = safeMul(1000, Math.pow(10, safeNum(realm, 0))); return Math.min(safeClampInf(safeMul(baseCost, 18)), 1e18); }
@@ -534,18 +556,16 @@ function getRealmPower(realm, realmLevel, charLevel) { let baseRealmPower = safe
 function getReincarnateMult() { return 1 + safeNum(state.reincarnateCount, 0) * 0.01; }
 
 // ==========================================
-// 核心逻辑：世界与下界压制 (基于你提出的差值扣除)
+// 核心逻辑：世界与下界压制 (基于差值扣除)
 // ==========================================
 window.WORLD_NAMES = ['凡界', '仙界', '神界', '混沌界', '三千界域'];
 window.getCurrentWorldIndex = function() { return state.currentWorldIdx !== undefined ? state.currentWorldIdx : Math.min(4, Math.floor(state.realm / 17)); };
 window.getAscensionBonus = function() { if (!state.pillBuffs) state.pillBuffs = {}; return safeNum(state.pillBuffs.ascensionBonus, 0); };
 
-// 获取当前显示的境界文本及是否需要压制
 window.getRealmDisplayInfo = function() {
     const worldIdx = getCurrentWorldIndex();
     const maxRealmInWorld = (worldIdx + 1) * 17 - 1;
     
-    // 玩家真实境界大于当前世界天花板，受到压制
     if (state.realm > maxRealmInWorld) {
         return { 
             realmName: REALM_NAMES[maxRealmInWorld] || '未知', 
@@ -554,7 +574,6 @@ window.getRealmDisplayInfo = function() {
             maxRealmIdx: maxRealmInWorld
         };
     } else {
-        // 没被压制，显示真实境界
         return { 
             realmName: REALM_NAMES[state.realm] || '未知', 
             level: state.realmLevel, 
@@ -571,14 +590,14 @@ function calcStats() {
   const worldIdx = getCurrentWorldIndex();
   const maxRealmInWorld = (worldIdx + 1) * 17 - 1;
   
-  // === 核心战力计算 ===
+  // 核心战力计算
   let basePower;
   if (state.realm > maxRealmInWorld) {
       // 被压制：用最高战力 - (最高境界战力 - 压制境界战力)
       const trueRealmPower = getRealmPower(state.realm, state.realmLevel, state.charLevel);
       const maxWorldPower = getRealmPower(maxRealmInWorld, 9, state.charLevel);
-      const diff = safeAdd(trueRealmPower, -maxWorldPower); // 算出差值
-      basePower = safeAdd(trueRealmPower, -diff); // 扣除差值
+      const diff = safeAdd(trueRealmPower, -maxWorldPower); 
+      basePower = safeAdd(trueRealmPower, -diff); 
   } else {
       basePower = getRealmPower(state.realm, state.realmLevel, state.charLevel);
   }
@@ -587,12 +606,33 @@ function calcStats() {
   let critRate = safeNum(state.critRate, 0); let critDmg = safeNum(state.critDmg, 1.5); let luck = safeNum(state.luck, 0);
   let equipPower = 0;
   for (let p of PART_KEYS) { if(!state.equipment) state.equipment = {}; const eq = state.equipment[p]; if (eq) { const enhMult = 1 + safeNum(eq.enhance, 0) * 0.1; atk = safeAdd(atk, Math.round(safeMul(safeNum(eq.atk, 0), enhMult))); hp = safeAdd(hp, Math.round(safeMul(safeNum(eq.hp, 0), enhMult))); critRate = safeAdd(critRate, safeNum(eq.critRate, 0)); critDmg = safeAdd(critDmg, safeNum(eq.critDmg, 0)); equipPower += eq.atk + eq.hp; } }
+  
+  let baseAtkBeforePet = atk; 
+  let baseHpBeforePet = hp;
+  
   let petPower = 0;
   if (state.pets && state.pets.equipped !== null) { const idx = state.pets.owned.indexOf(state.pets.equipped); if (idx >= 0 && idx < PET_ATK.length) { atk = safeAdd(atk, PET_ATK[idx]); petPower += PET_ATK[idx]; } }
   if (state.spirits && state.spirits.equipped !== null) { const idx = state.spirits.owned.indexOf(state.spirits.equipped); if (idx >= 0 && idx < SPIRIT_HP.length) { hp = safeAdd(hp, SPIRIT_HP[idx]); petPower += SPIRIT_HP[idx]; } }
-  if(state.spells) { for (let sp of SPELL_DEFS) { const d = state.spells[sp.id]; if (!d) continue; const val = safeMul(safeNum(d.level, 1), sp.per); if (sp.stat === 'atk') atk = safeAdd(atk, val); else if (sp.stat === 'hp') hp = safeAdd(hp, val); else if (sp.stat === 'critRate') critRate = safeAdd(critRate, val); else if (sp.stat === 'critDmg') critDmg = safeAdd(critDmg, val); else if (sp.stat === 'luck') luck = safeAdd(luck, val); } }
+  
+  if(state.spells) { 
+    for (let sp of SPELL_DEFS) { 
+      const d = state.spells[sp.id]; 
+      if (!d) continue; 
+      const val = safeMul(safeNum(d.level, 1), sp.per); 
+      if (sp.stat === 'atk') atk = safeAdd(atk, val); 
+      else if (sp.stat === 'hp') hp = safeAdd(hp, val); 
+      else if (sp.stat === 'critRate') critRate = safeAdd(critRate, val); 
+      else if (sp.stat === 'critDmg') critDmg = safeAdd(critDmg, val); 
+      else if (sp.stat === 'luck') luck = safeAdd(luck, val); 
+    } 
+  }
+  
   atk = safeMul(atk, reincMult); hp = safeMul(hp, reincMult); equipPower = safeMul(equipPower, reincMult); petPower = safeMul(petPower, reincMult);
-  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(safeAdd(atk, safeMul(hp, 0.5)))), equipPower: Math.round(equipPower), petPower: Math.round(petPower) };
+  
+  // 修复综合战力计算：将各项攻击和血量按权重加和
+  const totalPower = safeAdd(atk, safeMul(hp, 0.5));
+  
+  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(totalPower)), equipPower: Math.round(equipPower), petPower: Math.round(petPower) };
 }
 
 window.doAscension = async function() {
@@ -648,7 +688,6 @@ window.goLowerWorld = async function() {
     state.jade = safeAdd(state.jade, -100000000000);
     state.currentWorldIdx = idx;
 
-    // 不修改 state.realm 本体
     const maxRealmInTarget = (idx + 1) * 17 - 1;
     if (state.realm > maxRealmInTarget) {
         toast(`🌀 穿梭成功！您已降临【${WORLD_NAMES[idx]}】，受天道压制，战力被削弱为【${REALM_NAMES[maxRealmInTarget]} 9层】！`);
@@ -658,6 +697,19 @@ window.goLowerWorld = async function() {
     
     renderAll(); saveState();
 };
+
+window.goBackToTopWorld = async function() {
+    const topWorld = Math.min(4, Math.floor(state.realm / 17));
+    if (state.currentWorldIdx === topWorld) return toast('您已经在原本的世界了！');
+    
+    const cost = realmTrainCost(state.realm, state.realmLevel); 
+    if (safeNum(state.jade, 0) < 100000000000) return toast('回到原本世界需要消耗 1000亿仙玉，您的仙玉不足！');
+    
+    state.jade = safeAdd(state.jade, -100000000000);
+    state.currentWorldIdx = topWorld;
+    toast(`🌟 穿梭成功！您已回到原本的世界【${WORLD_NAMES[topWorld]}】，属性全面恢复！`);
+    renderAll(); saveState();
+}
 
 // ==========================================
 // 核心逻辑：PVP 切磋
@@ -676,7 +728,7 @@ window.openPVPList = function() {
     el.innerHTML = '';
     players.forEach(p => {
         const div = document.createElement('div'); div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;';
-        div.innerHTML = `<div><div style="color:#ffd700;">${p.name}</div><div style="font-size:11px;color:#aaa;">战力: ${fmt((p.atk||0)+(p.hp||0)*0.5)}</div></div><button onclick="startPVP('${p.playerId}')" style="padding:6px 12px;background:#ff3b30;color:#fff;border:none;border-radius:6px;font-weight:bold;">挑战</button>`;
+        div.innerHTML = `<div><div style="color:#ffd700;">${p.name}</div><div style="font-size:11px;color:#aaa;">战力: ${fmt(p.totalPower||0)}</div></div><button onclick="startPVP('${p.playerId}')" style="padding:6px 12px;background:#ff3b30;color:#fff;border:none;border-radius:6px;font-weight:bold;">挑战</button>`;
         el.appendChild(div);
     });
     document.getElementById('actionModal').style.display = 'flex';
@@ -689,7 +741,7 @@ window.startPVP = async function(targetId) {
     
     toast(`⚔️ 与 ${target.name} 展开天道斗法！`);
     const myStats = calcStats();
-    const targetPower = (target.atk || 0) + (target.hp || 0) * 0.5;
+    const targetPower = safeNum(target.totalPower, 0);
     const myPower = myStats.totalPower;
 
     setTimeout(() => {
@@ -704,6 +756,185 @@ window.startPVP = async function(targetId) {
         renderAll(); saveState();
     }, 1500);
 };
+
+// ==========================================
+// 核心逻辑：炼丹系统 (包含灵智/开智药材与药效)
+// ==========================================
+window.herbSlots = [null, null, null];
+
+window.renderAlchemy = function() {
+  const slotEl = document.getElementById('herbSlots');
+  slotEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const item = window.herbSlots[i];
+    const div = document.createElement('div');
+    div.style.cssText = 'width:30%; aspect-ratio:1; background:rgba(0,0,0,0.5); border:1px dashed #666; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; position:relative;';
+    if (item) {
+      div.style.borderColor = QUALITY_COLORS[item.quality];
+      let intelStr = item.hasIntel ? '<div style="color:#ff00ff;font-weight:bold;font-size:10px;">✨开智✨</div>' : '';
+      div.innerHTML = `<div style="font-size:24px;">🌿</div><div style="font-size:10px;color:${QUALITY_COLORS[item.quality]};font-weight:bold;">${QUALITY_NAMES[item.quality]}</div><div style="font-size:10px;color:#aaa;">${item.years}年</div>${intelStr}`;
+      div.onclick = () => { window.herbSlots[i] = null; renderAlchemy(); };
+    } else {
+      div.innerHTML = `<div style="font-size:30px;color:#444;">+</div>`;
+      div.onclick = () => { selectHerbForSlot(i); };
+    }
+    slotEl.appendChild(div);
+  }
+
+  const listEl = document.getElementById('myHerbList');
+  listEl.innerHTML = '';
+  if (!state.herbItems || state.herbItems.length === 0) {
+    listEl.innerHTML = '<div style="color:#666;font-size:12px;text-align:center;">暂无拥有年份的药材，请去商城购买。</div>';
+  } else {
+    state.herbItems.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;';
+      let intelStr = item.hasIntel ? '<span style="color:#ff00ff;font-weight:bold;margin-left:5px;">[灵智]</span>' : '';
+      div.innerHTML = `<div><span style="color:${QUALITY_COLORS[item.quality]};font-weight:bold;">${QUALITY_NAMES[item.quality]}药材</span> <span style="color:#aaa;font-size:12px;">(${item.years}年)</span>${intelStr}</div><button onclick="quickSelectHerb(${idx})" style="padding:4px 8px;background:#9c27b0;color:#fff;border:none;border-radius:4px;font-size:12px;">放入</button>`;
+      listEl.appendChild(div);
+    });
+  }
+}
+
+window.selectHerbForSlot = function(slotIdx) {
+  if (!state.herbItems || state.herbItems.length === 0) return toast('你没有可用的草药，请先购买！');
+  window.herbSlotToSelect = slotIdx;
+  const el = document.getElementById('actionModalContent');
+  document.getElementById('actionModalTitle').innerText = '选择药材';
+  el.innerHTML = '';
+  state.herbItems.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;margin-bottom:5px;';
+    let intelStr = item.hasIntel ? '<span style="color:#ff00ff;font-weight:bold;">[灵智]</span>' : '';
+    div.innerHTML = `<span style="color:${QUALITY_COLORS[item.quality]};font-weight:bold;">${QUALITY_NAMES[item.quality]}药材</span> <span style="color:#aaa;">(${item.years}年)</span> ${intelStr}`;
+    div.onclick = () => {
+      window.herbSlots[window.herbSlotToSelect] = item;
+      state.herbItems.splice(idx, 1);
+      document.getElementById('actionModal').style.display = 'none';
+      renderAlchemy(); saveState();
+    };
+    el.appendChild(div);
+  });
+  document.getElementById('actionModal').style.display = 'flex';
+};
+
+window.quickSelectHerb = function(idx) {
+  for (let i = 0; i < 3; i++) {
+    if (!window.herbSlots[i]) {
+      window.herbSlots[i] = state.herbItems.splice(idx, 1)[0];
+      renderAlchemy(); saveState();
+      return;
+    }
+  }
+  toast('炼丹炉已经满了！');
+}
+
+window.doManualCraft = function() {
+  const validHerbs = window.herbSlots.filter(h => h !== null);
+  if (validHerbs.length < 3) return toast('必须放入3份药材才能炼丹！');
+
+  let totalQuality = 0;
+  let totalYears = 0;
+  let intelCount = 0;
+
+  validHerbs.forEach(h => { 
+    totalQuality += h.quality; 
+    totalYears += h.years; 
+    if (h.hasIntel) intelCount++;
+  });
+
+  const avgQuality = Math.floor(totalQuality / 3);
+  const avgYears = Math.floor(totalYears / 3);
+
+  // 灵智机制：灵智极大提高出极品的概率和药效
+  const intelBonus = intelCount * 0.15; 
+  const roll = Math.random() + intelBonus;
+  
+  let pillQuality = avgQuality;
+  let typeName = "丹药";
+  
+  if (roll < 0.02) {
+    pillQuality += randInt(10, 20); 
+    toast('✨ 丹炉震动！天地异象，神丹出世！');
+  } else if (roll < 0.15) {
+    pillQuality += randInt(4, 8);
+    toast('✨ 灵光一闪，高品质丹药诞生！');
+  } else if (roll < 0.4) {
+    pillQuality += randInt(1, 3);
+  } else {
+    pillQuality = Math.max(0, pillQuality - 1);
+  }
+
+  const finalQuality = Math.min(pillQuality, QUALITY_NAMES.length - 1);
+  const pillType = randInt(0, PILL_NAMES.length - 1);
+  
+  // 基础属性加成与流派
+  const baseAtk = safeMul(10, QUALITY_MULT[finalQuality]);
+  const baseHp = safeMul(30, QUALITY_MULT[finalQuality]);
+  
+  let bonusType = randInt(1, 5);
+  let bonusStr = "";
+  let effect = {};
+  
+  // 年份加成，灵智再次翻倍
+  const powerMult = 1 + (avgYears / 1000) + (intelCount * 0.5);
+  
+  if (bonusType === 1) {
+      effect = { atk: Math.floor(safeMul(baseAtk, powerMult)) };
+      bonusStr = `攻击力 +${fmt(effect.atk)}`;
+  } else if (bonusType === 2) {
+      effect = { hp: Math.floor(safeMul(baseHp, powerMult)) };
+      bonusStr = `气血 +${fmt(effect.hp)}`;
+  } else if (bonusType === 3) {
+      effect = { critRate: +(0.01 * (finalQuality+1) * powerMult).toFixed(4) };
+      bonusStr = `暴击率 +${(effect.critRate * 100).toFixed(2)}%`;
+  } else if (bonusType === 4) {
+      effect = { critDmg: +(0.1 * (finalQuality+1) * powerMult).toFixed(2) };
+      bonusStr = `暴击伤害 +${(effect.critDmg * 100).toFixed(0)}%`;
+  } else {
+      effect = { luck: Math.floor(5 * (finalQuality+1) * powerMult) };
+      bonusStr = `幸运 +${fmt(effect.luck)}`;
+  }
+
+  const newPill = {
+    id: 'PILL-' + Date.now(),
+    type: pillType,
+    quality: finalQuality,
+    years: avgYears,
+    hasIntel: intelCount > 0,
+    effect: effect,
+    desc: bonusStr
+  };
+
+  if (!state.pills) state.pills = [];
+  state.pills.push(newPill);
+
+  window.herbSlots = [null, null, null];
+  
+  toast(`🔥 炼丹成功！获得【${QUALITY_NAMES[finalQuality]}】${PILL_NAMES[pillType]}`);
+  renderAlchemy(); renderAll(); saveState();
+};
+
+// 查看丹药详情
+window.viewPillDetail = function(idx) {
+  let pillsArr = Array.isArray(state.pills) ? state.pills : Object.values(state.pills||{});
+  const p = pillsArr[idx]; if (!p) return;
+  
+  let qStr = p.quality !== undefined ? `【${QUALITY_NAMES[p.quality]}】` : '';
+  let yStr = p.years ? ` (${p.years}年药力)` : '';
+  let intelStr = p.hasIntel ? ` <span style="color:#ff00ff;">[蕴含灵智]</span>` : '';
+  let effectStr = p.desc ? p.desc : '提升自身修为';
+  
+  alert(`${qStr}${PILL_NAMES[p.type]}${yStr}${intelStr}\n\n功效：服用后永久 ${effectStr}`);
+}
+
+// 获取随机年份草药 (加入灵智判定)
+function generateRandomHerb(baseQuality) {
+  const q = Math.min(QUALITY_NAMES.length - 1, baseQuality + randInt(0, 2));
+  const years = randInt(10, 100) * (q + 1);
+  const hasIntel = Math.random() < 0.05; // 5%基础概率
+  return { quality: q, years: years, hasIntel: hasIntel };
+}
 
 // ==========================================
 // 核心逻辑：宗门修复 & 新增玩法
@@ -829,7 +1060,7 @@ async function loadPlayer() {
     const snap = await get(playerRef);
     if (snap.exists()) {
       const data = snap.val(); state = Object.assign(freshState(playerName), data);
-      if (!state.equipment) state.equipment = freshState(playerName).equipment; if (!state.pets) state.pets = { owned: [], equipped: null }; if (!state.spirits) state.spirits = { owned: [], equipped: null }; if (!state.inventory) state.inventory = []; if (!state.spells) state.spells = {}; if (!state.boughtGifts) state.boughtGifts = []; if (!state.friends) state.friends = []; if (!state.friendRequests) state.friendRequests = []; if (!state.mail) state.mail = []; if (!state.pills) state.pills = []; if (state.herbs === undefined) state.herbs = 0; if(!state.pillBuffs) state.pillBuffs = {};
+      if (!state.equipment) state.equipment = freshState(playerName).equipment; if (!state.pets) state.pets = { owned: [], equipped: null }; if (!state.spirits) state.spirits = { owned: [], equipped: null }; if (!state.inventory) state.inventory = []; if (!state.spells) state.spells = {}; if (!state.boughtGifts) state.boughtGifts = []; if (!state.friends) state.friends = []; if (!state.friendRequests) state.friendRequests = []; if (!state.mail) state.mail = []; if (!state.pills) state.pills = []; if (state.herbs === undefined) state.herbs = 0; if (!state.herbItems) state.herbItems = []; if(!state.pillBuffs) state.pillBuffs = {};
     } else { state = freshState(playerName); await set(playerRef, state); }
     
     if (state.currentWorldIdx === undefined || state.currentWorldIdx === null) { state.currentWorldIdx = Math.min(4, Math.floor(state.realm / 17)); }
@@ -846,7 +1077,7 @@ async function loadPlayer() {
     onValue(ref(db, 'game_players'), (s) => { 
       if (s.exists()) { allOnlinePlayers = s.val(); for (let k in allOnlinePlayers) { const p = allOnlinePlayers[k]; allOnlinePlayers[k].playerId = k; 
         let baseP = getRealmPower(p.realm||0, p.realmLevel||1, p.charLevel||1); 
-        let petP = 0; if(p.pets && p.pets.equipped !== null) { const idx = p.pets.owned.indexOf(p.pets.equipped); if(idx >= 0 && idx < PET_ATK.length) petP += PET_ATK[idx]; } if(p.spirits && p.spirits.equipped !== null) { const idx = p.spirits.owned.indexOf(p.spirits.equipped); if(idx >= 0 && idx < SPIRIT_HP.length) petP += SPIRIT_HP[idx]; } let eqP = 0; if(p.equipment) { for(let pt of PART_KEYS){ if(p.equipment[pt]) eqP += p.equipment[pt].atk + p.equipment[pt].hp; } } let reincMult = 1 + (p.reincarnateCount||0)*0.01; allOnlinePlayers[k].totalPower = baseP * reincMult; allOnlinePlayers[k].petPower = petP * reincMult; allOnlinePlayers[k].equipPower = eqP * reincMult; } } 
+        let petP = 0; if(p.pets && p.pets.equipped !== null) { const idx = p.pets.owned.indexOf(p.pets.equipped); if(idx >= 0 && idx < PET_ATK.length) petP += PET_ATK[idx]; } if(p.spirits && p.spirits.equipped !== null) { const idx = p.spirits.owned.indexOf(p.spirits.equipped); if(idx >= 0 && idx < SPIRIT_HP.length) petP += SPIRIT_HP[idx]; } let eqP = 0; if(p.equipment) { for(let pt of PART_KEYS){ if(p.equipment[pt]) eqP += p.equipment[pt].atk + p.equipment[pt].hp; } } let reincMult = 1 + (p.reincarnateCount||0)*0.01; allOnlinePlayers[k].totalPower = (baseP + eqP + petP) * reincMult; allOnlinePlayers[k].petPower = petP * reincMult; allOnlinePlayers[k].equipPower = eqP * reincMult; } } 
     });
     renderAll(); startTick(); return true;
   } catch (e) { authErr('读取存档失败: ' + e.message); return false; }
@@ -881,7 +1112,7 @@ function renderAll() {
   const chopBtn = document.getElementById('chopBtn'); 
   if (safeNum(state.peaches,0) < 1) { chopBtn.disabled = true; chopBtn.innerText = '🪓 仙桃不足'; } else { chopBtn.disabled = false; chopBtn.innerText = '🪓 砍树（消耗1仙桃）'; }
   
-  renderEquipment(); renderInventory(); renderPetsSpirits(); renderGifts(); renderSect(); renderHome(); renderMails(); renderFriends(); renderPills(); renderAuction(); renderSecretRealms(); renderRankTabs(); renderWorldTab(); renderBag();
+  renderEquipment(); renderInventory(); renderPetsSpirits(); renderGifts(); renderSect(); renderHome(); renderMails(); renderFriends(); renderPills(); renderAuction(); renderSecretRealms(); renderRankTabs(); renderWorldTab(); renderBag(); renderAlchemy();
 
   document.getElementById('realmDisplay').innerText = displayRealm + ' ' + info.level + ' 层'; 
   document.getElementById('extraDropDisplay').innerText = state.extraDropLevel || 0; 
@@ -904,6 +1135,7 @@ function renderWorldTab() {
     
     const btnAsc = document.getElementById('btnAscend');
     const btnGoLow = document.getElementById('btnGoLower');
+    const btnGoBack = document.getElementById('btnGoBack');
     
     if (idx === 4) {
         btnAsc.style.display = 'none';
@@ -911,6 +1143,14 @@ function renderWorldTab() {
         btnAsc.style.display = 'block';
     }
     btnGoLow.style.display = 'block';
+
+    // 如果当前不在其真实境界对应的世界，则显示“回到原本世界”按钮
+    const trueWorld = Math.min(4, Math.floor(state.realm / 17));
+    if (idx < trueWorld) {
+        btnGoBack.style.display = 'block';
+    } else {
+        btnGoBack.style.display = 'none';
+    }
 }
 
 function renderBag() {
@@ -922,8 +1162,16 @@ function renderBag() {
     let pillsArr = Array.isArray(state.pills) ? state.pills : Object.values(state.pills||{});
     if (pillsArr.length === 0) { el.innerHTML = '<div style="color:#666;font-size:12px;text-align:center;">背包空空</div>'; return; }
     pillsArr.forEach((p, idx) => {
-        const div = document.createElement('div'); div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;';
-        div.innerHTML = `<div style="color:#ffd700;">${PILL_NAMES[p.type]||'未知丹药'}</div><button onclick="usePill(${idx})" style="padding:4px 8px; background:#9c27b0; color:#fff; border:none; border-radius:6px; font-weight:bold;">服用</button>`;
+        const div = document.createElement('div'); 
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;cursor:pointer;';
+        // 点击主体区域查看详情，只有点击右侧按钮才会服用
+        div.onclick = () => viewPillDetail(idx);
+
+        let qStr = p.quality !== undefined ? `[${QUALITY_NAMES[p.quality]}] ` : '';
+        let yStr = p.years ? ` (${p.years}年)` : '';
+        let intelStr = p.hasIntel ? ' ✨灵智' : '';
+        
+        div.innerHTML = `<div style="color:#ffd700;">${qStr}${PILL_NAMES[p.type]||'未知丹药'}${yStr}${intelStr}</div><button onclick="event.stopPropagation(); usePill(${idx})" style="padding:4px 8px; background:#9c27b0; color:#fff; border:none; border-radius:6px; font-weight:bold;">服用</button>`;
         el.appendChild(div);
     });
 }
@@ -968,6 +1216,7 @@ window.renderFriends = function() {
   if (reqArr.length === 0) { rEl.innerHTML = '<div style="color:#666;font-size:12px;text-align:center;">暂无申请</div>'; } else { reqArr.forEach(req => { const div = document.createElement('div'); div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;'; div.innerHTML = `<span>${req.name}</span><div><button onclick="acceptFriend('${req.id}')" style="padding:4px 8px; background:#30d158; color:#000; border:none; border-radius:4px; margin-right:4px;">同意</button><button onclick="rejectFriend('${req.id}')" style="padding:4px 8px; background:#ff3b30; color:#fff; border:none; border-radius:4px;">拒绝</button></div>`; rEl.appendChild(div); }); }
 };
 
+// 修复邮件领取，兼容新草药系统
 window.renderMails = function() { 
   const el = document.getElementById('mailList'); el.innerHTML = ''; 
   let mailArray = [];
@@ -986,6 +1235,7 @@ window.renderMails = function() {
         if (m.attachments.pet) attDesc.push(`灵兽x${m.attachments.pet}`);
         if (m.attachments.spirit) attDesc.push(`精怪x${m.attachments.spirit}`);
         if (m.attachments.equipment) attDesc.push(`极品装备`);
+        if (m.attachments.herbItems) attDesc.push(`灵智药材(${m.attachments.herbItems.years}年)`);
     }
     let attStr = attDesc.length > 0 ? attDesc.join(', ') : '无';
     div.innerHTML = `<div style="font-weight:bold;color:#ffd700;margin-bottom:4px;">${m.title}</div><div style="font-size:12px;color:#aaa;margin-bottom:8px;">${m.content}</div><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;color:#00c6ff;">附件: ${attStr}</span><button onclick="claimMail(${idx})" ${m.claimed?'disabled':''} style="padding:4px 8px; background:${m.claimed?'#555':'#30d158'}; color:${m.claimed?'#aaa':'#000'}; border:none; border-radius:6px; font-weight:bold;">${m.claimed?'已领取':'领取'}</button></div>`; 
@@ -1015,6 +1265,12 @@ window.claimAllMails = async function() {
                   for(let j=0; j<count; j++) {
                       let eq = genEquipment(state.treeLevel + 20, a.equipment.quality); 
                       state.inventory.push(eq); 
+                  }
+              }
+              if (a.herbItems) {
+                  if (!state.herbItems) state.herbItems = [];
+                  for(let j=0; j<Math.min(a.herbItems.count||1, 50); j++) {
+                      state.herbItems.push({ quality: a.herbItems.quality, years: a.herbItems.years, hasIntel: a.herbItems.hasIntel });
                   }
               }
           }
@@ -1073,6 +1329,12 @@ window.claimMail = async function(idx) {
               state.inventory.push(eq); 
           }
       }
+      if (a.herbItems) {
+          if (!state.herbItems) state.herbItems = [];
+          for(let j=0; j<Math.min(a.herbItems.count||1, 50); j++) {
+              state.herbItems.push({ quality: a.herbItems.quality, years: a.herbItems.years, hasIntel: a.herbItems.hasIntel });
+          }
+      }
   }
   m.claimed = true; state.mail = mailArray;
   await saveState();
@@ -1086,8 +1348,16 @@ window.renderPills = function() {
   if (state.pills) pillsArr = Array.isArray(state.pills) ? state.pills : Object.values(state.pills);
   if (pillsArr.length === 0) { el.innerHTML = '<div style="color:#666;font-size:12px;text-align:center;">暂无丹药</div>'; return; } 
   pillsArr.forEach((p, idx) => { 
-    const div = document.createElement('div'); div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;'; 
-    div.innerHTML = `<div style="color:#ffd700;">${PILL_NAMES[p.type]||'未知丹药'}</div><button onclick="usePill(${idx})" style="padding:4px 8px; background:#9c27b0; color:#fff; border:none; border-radius:6px; font-weight:bold;">服用</button>`; 
+    const div = document.createElement('div'); 
+    div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;cursor:pointer;'; 
+    // 点击主体区域查看详情，只有点击右侧按钮才会服用
+    div.onclick = () => viewPillDetail(idx);
+
+    let qStr = p.quality !== undefined ? `[${QUALITY_NAMES[p.quality]}] ` : '';
+    let yStr = p.years ? ` (${p.years}年)` : '';
+    let intelStr = p.hasIntel ? ' ✨灵智' : '';
+    
+    div.innerHTML = `<div style="color:#ffd700;">${qStr}${PILL_NAMES[p.type]||'未知丹药'}${yStr}${intelStr}</div><button onclick="event.stopPropagation(); usePill(${idx})" style="padding:4px 8px; background:#9c27b0; color:#fff; border:none; border-radius:6px; font-weight:bold;">服用</button>`; 
     el.appendChild(div); 
   }); 
 };
@@ -1140,7 +1410,28 @@ function renderInventory() {
   }); 
 }
 
-function renderPetsSpirits() { const petEl = document.getElementById('petList'); petEl.innerHTML = ''; PET_NAMES.slice(0, 10).forEach((name, i) => { const owned = state.pets.owned.includes(i); const equipped = state.pets.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ffd700;">${name}</div><div style="font-size:11px;color:#aaa;">攻 +${fmt(PET_ATK[i])}</div>${owned ? `<button onclick="equipPet(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(0,198,255,0.2)'};color:${equipped?'#30d158':'#00c6ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; petEl.appendChild(div); }); const spEl = document.getElementById('spiritList'); spEl.innerHTML = ''; SPIRIT_NAMES.slice(0, 10).forEach((name, i) => { const owned = state.spirits.owned.includes(i); const equipped = state.spirits.equipped === i; const div = document.createElement('div'); div.className = 'pet-item'; div.style.opacity = owned ? 1 : 0.4; div.innerHTML = `<div style="font-weight:bold;color:#ff00ff;">${name}</div><div style="font-size:11px;color:#aaa;">血 +${fmt(SPIRIT_HP[i])}</div>${owned ? `<button onclick="equipSpirit(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(255,0,255,0.2)'};color:${equipped?'#30d158':'#ff00ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; spEl.appendChild(div); }); }
+// 这里取消了 .slice(0, 10)，改为全量渲染，解决“只显示前十个”的问题
+function renderPetsSpirits() { 
+    const petEl = document.getElementById('petList'); petEl.innerHTML = ''; 
+    PET_NAMES.forEach((name, i) => { 
+        const owned = state.pets.owned.includes(i); 
+        const equipped = state.pets.equipped === i; 
+        const div = document.createElement('div'); div.className = 'pet-item'; 
+        div.style.opacity = owned ? 1 : 0.4; 
+        div.innerHTML = `<div style="font-weight:bold;color:#ffd700;">${name}</div><div style="font-size:11px;color:#aaa;">攻 +${fmt(PET_ATK[i])}</div>${owned ? `<button onclick="equipPet(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(0,198,255,0.2)'};color:${equipped?'#30d158':'#00c6ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; 
+        petEl.appendChild(div); 
+    }); 
+    
+    const spEl = document.getElementById('spiritList'); spEl.innerHTML = ''; 
+    SPIRIT_NAMES.forEach((name, i) => { 
+        const owned = state.spirits.owned.includes(i); 
+        const equipped = state.spirits.equipped === i; 
+        const div = document.createElement('div'); div.className = 'pet-item'; 
+        div.style.opacity = owned ? 1 : 0.4; 
+        div.innerHTML = `<div style="font-weight:bold;color:#ff00ff;">${name}</div><div style="font-size:11px;color:#aaa;">血 +${fmt(SPIRIT_HP[i])}</div>${owned ? `<button onclick="equipSpirit(${i})" style="margin-top:6px;padding:5px 10px;background:${equipped?'rgba(52,199,89,0.3)':'rgba(255,0,255,0.2)'};color:${equipped?'#30d158':'#ff00ff'};border-radius:6px;font-size:11px;">${equipped?'已上阵':'上阵'}</button>` : ''}`; 
+        spEl.appendChild(div); 
+    }); 
+}
 
 function renderRankTabs() {
     const wrap = document.getElementById('rankTabsWrap');
@@ -1186,7 +1477,7 @@ window.switchRankTab = function(type, btn) {
     else if (type === 'tree') valueStr = `仙树 Lv.${fmt(p.treeLevel||1)}`;
     else if (type === 'equipScore') valueStr = `评分 ${fmt(p.equipPower||0)}`;
     else if (type === 'powerHp') valueStr = `攻${fmt(p.atk||0)} / 血${fmt(p.hp||0)}`;
-    else if (type === 'totalPower') valueStr = `综合 ${fmt((p.atk||0)+(p.hp||0)*0.5)}`; 
+    else if (type === 'totalPower') valueStr = `综合 ${fmt(p.totalPower||0)}`; 
     else if (type === 'jade') valueStr = `💎 ${fmt(p.jade||0)}`;
     else if (type === 'peach') valueStr = `🍑 ${fmt(p.peaches||0)}`;
     
@@ -1542,7 +1833,7 @@ window.doReincarnate = function() {
 };
 
 window.buyJadeItem = async function(itemType) { 
-  let cost = itemType === 'hourglass' ? 1 : itemType === 'ticket' ? 100 : 10; 
+  let cost = itemType === 'hourglass' ? 1000 : itemType === 'ticket' ? 3 : 10; 
   if (safeNum(state.jade,0) < cost) return toast(`💎 仙玉不足`); 
   
   // 修复时光沙漏秒升Bug：必须先点了升级，且在冷却中，才能减时间
@@ -1567,10 +1858,34 @@ window.buyJadeItem = async function(itemType) {
 };
 
 window.buyHerb = async function(type) { 
-  if (type === 'low') { if (state.peaches < 100) return toast('仙桃不足'); state.peaches -= 100; state.herbs = safeAdd(state.herbs, randInt(1,5)); toast('购买成功，获得药材'); } 
-  else if (type === 'mid') { if (state.jade < 10) return toast('仙玉不足'); state.jade -= 10; state.herbs = safeAdd(state.herbs, randInt(5,15)); toast('购买成功，获得高级药材'); } 
-  else if (type === 'high') { if (state.jade < 50) return toast('仙玉不足'); state.jade -= 50; state.herbs = safeAdd(state.herbs, randInt(20,50)); toast('购买成功，获得海量药材'); }
-  renderAll(); saveState(); 
+  if (type === 'low') { 
+    if (state.peaches < 100) return toast('仙桃不足'); 
+    state.peaches -= 100; 
+    for(let i=0; i<randInt(1,3); i++) {
+        state.herbItems.push(generateRandomHerb(0));
+    }
+    state.herbs = safeAdd(state.herbs, 1);
+    toast('购买成功，获得药材'); 
+  } 
+  else if (type === 'mid') { 
+    if (state.jade < 10) return toast('仙玉不足'); 
+    state.jade -= 10; 
+    for(let i=0; i<randInt(2,5); i++) {
+        state.herbItems.push(generateRandomHerb(3));
+    }
+    state.herbs = safeAdd(state.herbs, 5);
+    toast('购买成功，获得高级药材'); 
+  } 
+  else if (type === 'high') { 
+    if (state.jade < 50) return toast('仙玉不足'); 
+    state.jade -= 50; 
+    for(let i=0; i<randInt(5,10); i++) {
+        state.herbItems.push(generateRandomHerb(6));
+    }
+    state.herbs = safeAdd(state.herbs, 20);
+    toast('购买成功，获得海量药材'); 
+  }
+  renderAll(); renderAlchemy(); saveState(); 
 };
 
 window.craftPill = function() { if (state.herbs < 10) return toast('药材不足 (需10个)'); state.herbs -= 10; const pIdx = randInt(0, 99); if(!state.pills) state.pills=[]; state.pills.push({ type: pIdx }); toast(`🔥 炼丹成功！获得：${PILL_NAMES[pIdx]}`); renderAll(); saveState(); };
@@ -1579,7 +1894,20 @@ window.usePill = function(idx) {
   let pillsArr = Array.isArray(state.pills) ? state.pills : Object.values(state.pills||{});
   const p = pillsArr[idx]; if (!p) return; 
   pillsArr.splice(idx, 1); state.pills = pillsArr;
-  toast(`服用 ${PILL_NAMES[p.type]} 成功，属性永久提升！`); renderAll(); saveState(); 
+  
+  if (p.effect) {
+      // 真实增加属性
+      if (p.effect.atk) state.atk = safeAdd(state.atk, p.effect.atk);
+      if (p.effect.hp) state.hp = safeAdd(state.hp, p.effect.hp);
+      if (p.effect.critRate) state.critRate = safeAdd(state.critRate, p.effect.critRate);
+      if (p.effect.critDmg) state.critDmg = safeAdd(state.critDmg, p.effect.critDmg);
+      if (p.effect.luck) state.luck = safeAdd(state.luck, p.effect.luck);
+      toast(`服用 ${PILL_NAMES[p.type]} 成功，永久提升 ${p.desc}！`);
+  } else {
+      toast(`服用 ${PILL_NAMES[p.type]} 成功，属性永久提升！`); 
+  }
+  
+  renderAll(); saveState(); 
 };
 
 window.exploreRuins = async function() { if (state.jade < 5) return toast('仙玉不足'); state.jade -= 5; const eq = genEquipment(state.treeLevel + 30); if(!state.inventory) state.inventory=[]; state.inventory.push(eq); toast(`🏛️ 遗迹掉落：${QUALITY_NAMES[eq.quality]}`); renderAll(); saveState(); };
@@ -1629,7 +1957,7 @@ function toast(msg) { const el = document.createElement('div'); el.className = '
 function showFloatText(text) { const box = document.getElementById('floatBox'); const el = document.createElement('div'); el.className = 'float-text'; el.innerText = text; el.style.left = (40 + Math.random() * 20) + '%'; box.appendChild(el); setTimeout(() => el.remove(), 1200); }
 function showDropText(text, color) { const box = document.getElementById('floatBox'); const el = document.createElement('div'); el.className = 'drop-text'; el.innerText = text; el.style.color = color; box.appendChild(el); setTimeout(() => el.remove(), 1500); }
 function showBanScreen(data) { document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;display:flex;justify-content:center;align-items:center;flex-direction:column;padding:20px;text-align:center;"><h1 style="color:#ff3b30;font-size:28px;font-weight:900;">🚫 账号已被封禁</h1><p style="color:#ff453a;margin-top:20px;font-size:16px;">原因：${data.reason || '未填写'}</p></div>`; }
-window.switchPage = function(page) { ['chop','equip','map','cultivate','shop','sect','rank','friend','home','mail','world','bag'].forEach(p => { const el = document.getElementById('page-' + p); if (el) el.style.display = 'none'; }); const target = document.getElementById('page-' + page); if (target) target.style.display = 'flex'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); const navBtn = document.querySelector(`.nav-btn[data-page="${page}"]`); if (navBtn) navBtn.classList.add('active'); if(page === 'rank') switchRankTab(currentRankTab); if(page === 'friend') renderFriends(); if(page === 'home') renderHome(); if(page === 'mail') renderMails(); if(page === 'sect') { renderSectList(); if(state.sect) renderSect(); } if(page === 'world') renderWorldTab(); if(page === 'bag') renderBag(); };
+window.switchPage = function(page) { ['chop','equip','map','cultivate','shop','sect','rank','friend','home','mail','world','bag','alchemy'].forEach(p => { const el = document.getElementById('page-' + p); if (el) el.style.display = 'none'; }); const target = document.getElementById('page-' + page); if (target) target.style.display = 'flex'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); const navBtn = document.querySelector(`.nav-btn[data-page="${page}"]`); if (navBtn) navBtn.classList.add('active'); if(page === 'rank') switchRankTab(currentRankTab); if(page === 'friend') renderFriends(); if(page === 'home') renderHome(); if(page === 'mail') renderMails(); if(page === 'sect') { renderSectList(); if(state.sect) renderSect(); } if(page === 'world') renderWorldTab(); if(page === 'bag') renderBag(); if(page === 'alchemy') renderAlchemy(); };
 
 async function saveState() { if (!playerRef || !state) return; state.lastActive = Date.now(); try { await update(playerRef, state); } catch(e) { console.log('save error', e); } }
 
