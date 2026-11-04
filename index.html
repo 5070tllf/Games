@@ -72,7 +72,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .btn-orange { background:linear-gradient(135deg,#ff9500,#ff5e00); color:#fff; }
 .btn-red { background:linear-gradient(135deg,#ff3b30,#d50000); color:#fff; }
 .nav { display:flex; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.1); padding-bottom:env(safe-area-inset-bottom); flex-shrink:0; overflow-x:auto; }
-.nav-btn { flex::1; padding:8px 0; background:none; border:none; color:#888; font-size:9px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:0.2s; min-width:48px; }
+.nav-btn { flex:1; padding:8px 0; background:none; border:none; color:#888; font-size:9px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:0.2s; min-width:48px; }
 .nav-btn .icon { font-size:18px; }
 .nav-btn.active { color:#00c6ff; }
 .nav-btn.active .icon { filter:drop-shadow(0 0 8px #00c6ff); }
@@ -95,6 +95,12 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 .rank-tab-btn { padding:6px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#888; border-radius:8px; font-size:12px; font-weight:bold; white-space:nowrap; cursor:pointer; flex-shrink:0; }
 .rank-tab-btn.active { background:rgba(0,198,255,0.2); border-color:#00c6ff; color:#00c6ff; }
 .rank-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; }
+.pixel-stage { position:relative; width:100%; height:180px; background:radial-gradient(circle at 50% 60%, rgba(80,0,120,0.5), rgba(0,0,0,0.9)); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+.pixel-cast { position:absolute; top:14%; left:50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(7,4px); grid-auto-rows:4px; gap:1px; }
+.pixel-cell { width:4px; height:4px; background:transparent; }
+.ld-skill-bar { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px; }
+.ld-skill-btn { padding:10px 4px; font-size:11px; font-weight:800; border:none; border-radius:10px; cursor:pointer; color:#fff; }
+.ld-skill-btn:disabled { opacity:0.35; cursor:not-allowed; }
 </style>
 
 <script>
@@ -123,6 +129,9 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
   <div class="auth-box">
     <h1>寻道 · 砍树修仙</h1>
     <button class="one-click" id="btnOneClick" onclick="doOneClickLogin()"></button>
+    <!-- 新增：Google 登录按钮 -->
+    <button class="primary" id="btnGoogleLogin" style="background:linear-gradient(135deg,#ea4335,#d32f2f);color:#fff;margin-top:10px;display:none;" onclick="doGoogleLogin()">🔴 使用 Google 账号登录</button>
+    
     <div style="text-align:center;color:#666;font-size:12px;margin:8px 0;">—— 或使用账号密码 ——</div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">账号登录</button>
@@ -263,6 +272,14 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <button class="big-btn btn-gold" onclick="buyExtraDrop()">🪓 消耗天赋点升级：额外掉落装备</button>
         <div style="font-size:12px;color:#ffd700;margin-top:5px;text-align:center;">当前额外掉落件数：+<span id="extraDropDisplay">0</span></div>
         <div style="font-size:12px;color:#30d158;margin-top:5px;text-align:center;">轮回加成：全属性 +<span id="reincarnateBonus">0</span>%</div>
+      </div>
+      <div class="card">
+        <div class="card-title">☯️ 仙魔阵营</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:10px;">修仙（仙气）/ 修魔（魔气）数值完全一致，仅显示前缀不同。仙魔同修为隐藏路线，需作者发放令牌解锁。</div>
+        <div style="font-size:13px;margin-bottom:10px;">当前阵营：<span id="campDisplay" style="color:#ffd700;font-weight:bold;">仙修</span></div>
+        <button class="big-btn btn-blue" onclick="switchCamp('xian')">🧙 转为修仙</button>
+        <button class="big-btn btn-red" onclick="switchCamp('mo')">👹 转为修魔</button>
+        <button class="big-btn btn-purple" id="btnXianmoUnlock" onclick="unlockXianmo()">☯️ 仙魔同修（需令牌）</button>
       </div>
       <div class="card">
         <div class="card-title">仙树与仙术</div>
@@ -407,6 +424,25 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div style="font-size:12px;color:#aaa;margin-bottom:10px;">在同世界内寻找道友单挑，胜者可得对方部分修为！</div>
         <button class="big-btn btn-red" onclick="openPVPList()">🩸 寻找对手切磋</button>
       </div>
+      <div class="card" style="border-color:#8b0000;">
+        <div class="card-title" style="color:#ff3b30;">☠️ 生死斗</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:10px;">
+          消耗 1 枚「心魔 · 生死决斗令」发起。胜者掠夺对方全部修为；败者被击杀，强制轮回重修（不计入转生次数）。对方离线则由 AI 自动出招。
+        </div>
+        <div style="font-size:12px;color:#ffd700;margin-bottom:8px;">当前令牌：<span id="ldTokenCount">0</span> 枚</div>
+        <div id="ldBattlePanel" style="display:none;">
+          <div class="pixel-stage">
+            <div class="pixel-cast" id="ldPixelCast"></div>
+            <div id="ldBattleLog" style="position:absolute;bottom:8px;left:8px;right:8px;font-size:11px;color:#ccc;max-height:60px;overflow:hidden;line-height:1.4;"></div>
+          </div>
+          <div style="font-size:12px;color:#30d158;">我方 HP <span id="ldMyHpTxt">0</span></div>
+          <div class="battle-hp"><div class="battle-hp-fill" id="ldMyHpBar" style="width:100%;background:linear-gradient(90deg,#30d158,#00c6ff);"></div></div>
+          <div style="font-size:12px;color:#ff3b30;">敌方 HP <span id="ldEnemyHpTxt">0</span></div>
+          <div class="battle-hp"><div class="battle-hp-fill" id="ldEnemyHpBar" style="width:100%;background:linear-gradient(90deg,#ff3b30,#ff8c00);"></div></div>
+          <div class="ld-skill-bar" id="ldSkillBar"></div>
+        </div>
+        <button class="big-btn btn-red" id="ldStartBtn" onclick="openLifeDeath()">☠️ 发起生死斗</button>
+      </div>
     </div>
     <div class="page" id="page-bag">
       <div class="card">
@@ -414,7 +450,7 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div style="font-size:14px;margin-bottom:10px;">💎 仙玉：<span id="bagJade" style="color:#00e5ff;font-weight:bold;">0</span></div>
         <div style="font-size:14px;margin-bottom:10px;">🍑 仙桃：<span id="bagPeaches" style="color:#ff9500;font-weight:bold;">0</span></div>
         <div style="font-size:14px;margin-bottom:10px;">🌿 药材：<span id="bagHerbs" style="color:#30d158;font-weight:bold;">0</span></div>
-        <div style="font-size:14px;margin-bottom:10:10px;">🔑 钥匙：普通 <span id="bagKeyNormal" style="color:#fff;font-weight:bold;">0</span> · 黄金 <span id="bagKeyGold" style="color:#ffd700;font-weight:bold;">0</span> · 混沌 <span id="bagKeyChaos" style="color:#e040fb;font-weight:bold;">0</span></div>
+        <div style="font-size:14px;margin-bottom:10px;">🔑 钥匙：普通 <span id="bagKeyNormal" style="color:#fff;font-weight:bold;">0</span> · 黄金 <span id="bagKeyGold" style="color:#ffd700;font-weight:bold;">0</span> · 混沌 <span id="bagKeyChaos" style="color:#e040fb;font-weight:bold;">0</span></div>
       </div>
       <div class="card">
         <div class="card-title">📦 宝箱与特殊道具 <button onclick="openAllChests()" style="padding:4px 8px;background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.4);border-radius:6px;font-size:11px;">一键开启</button></div>
@@ -430,7 +466,12 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
         <div style="font-size:24px;font-weight:900;color:#fff;" id="profName">名字</div>
         <div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
         <div style="font-size:12px;color:#ffd700;margin-top:4px;" id="profReincarnate">轮回 0 次</div>
-        <button class="big-btn btn-blue" style="margin-top:15px; margin-bottom:0;" onclick="openEncyclopedia()">📖 查看全物品图鉴</button>
+        
+        <!-- 新增：绑定 Google -->
+        <button class="big-btn btn-blue" id="btnBindGoogle" style="margin-top:15px;" onclick="bindGoogleAccount()">🔗 绑定 Google 账号</button>
+        <div id="bindStatusText" style="font-size:12px;color:#30d158;margin-top:5px;"></div>
+
+        <button class="big-btn btn-blue" style="margin-top:10px; margin-bottom:0;" onclick="openEncyclopedia()">📖 查看全物品图鉴</button>
       </div>
       <div class="card">
         <div class="card-title">📋 今日目标</div>
@@ -528,10 +569,18 @@ body::before { content:''; position:fixed; top:-50vh; left:-50vw; width:200vw; h
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
-  databaseURL: "https://class3b-5b39b-default-rtdb.asia-southeast1.firebasedatabase.app"
-  };
+  apiKey: "AIzaSyBLvKgZCWTLRAP1kG6_UlVzszKDn6bk4GA",
+  authDomain: "class3b-5b39b.firebaseapp.com",
+  databaseURL: "https://class3b-5b39b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "class3b-5b39b",
+  storageBucket: "class3b-5b39b.firebasestorage.app",
+  messagingSenderId: "791760710166",
+  appId: "1:791760710166:web:23716134043a58dea0a337",
+  measurementId: "G-EJK7XR7RXR"
+};
 
 let db = null;
 let auth = null;
@@ -557,6 +606,22 @@ let globalAuctions = {};
 let autoChopRunning = false;
 let invFilterPart = 'all';
 let invSortMode = 'quality';
+
+// ===== 生死斗运行时状态（仅本地，不存档） =====
+let ld = {
+  active: false,
+  enemyId: null,
+  enemyName: '',
+  enemyOffline: false,
+  myHp: 0, myMaxHp: 0,
+  enemyHp: 0, enemyMaxHp: 0,
+  myAtk: 0, enemyAtk: 0,
+  myCritRate: 0, myCritDmg: 1.5,
+  enemyCritRate: 0, enemyCritDmg: 1.5,
+  myCd: {}, enemyCd: {},
+  skillFlash: 0,
+  ended: false
+};
 
 const RANK_TABS = [
     { id: 'realm', name: '境界榜' },
@@ -745,7 +810,9 @@ const SPECIAL_ITEM_DEFS = {
   ticket_pack:    { id:'ticket_pack', name:'挑战令礼盒', icon:'🎫', desc:'打开获得妖王/塔挑战次数', needKey:null, rarity:2 },
   material_box:   { id:'material_box', name:'材料箱', icon:'📦', desc:'药材与仙桃', needKey:null, rarity:1 },
   pet_egg:        { id:'pet_egg', name:'灵兽蛋', icon:'🥚', desc:'有概率孵化新灵兽', needKey:null, rarity:3 },
-  spirit_bottle:  { id:'spirit_bottle', name:'精怪瓶', icon:'🫙', desc:'有概率获得新精怪', needKey:null, rarity:3 }
+  spirit_bottle:  { id:'spirit_bottle', name:'精怪瓶', icon:'🫙', desc:'有概率获得新精怪', needKey:null, rarity:3 },
+  token_life_death: { id:'token_life_death', name:'心魔 · 生死决斗令', icon:'☠️', desc:'作者专属发放。消耗1枚发起生死斗，胜者掠夺对方全部修为，败者强制轮回重修（不计转生次数）', needKey:null, rarity:6, noUse:true },
+  token_xianmo:     { id:'token_xianmo', name:'仙魔同修令牌', icon:'☯️', desc:'作者专属发放的隐藏道具。使用后解锁「仙魔同修」阵营', needKey:null, rarity:6, noUse:true }
 };
 
 function ensureSpecialItems() {
@@ -937,6 +1004,16 @@ window.useSpecialItem = async function(id) {
   const def = SPECIAL_ITEM_DEFS[id];
   if (!def) return toast('未知物品');
 
+  if (id === 'token_xianmo') {
+    if (!consumeSpecialItem(id, 1)) return toast('没有该令牌');
+    state.camp = 'both';
+    toast('☯️ 仙魔同修令牌已使用，解锁「仙魔同修」阵营！');
+    renderAll(); await saveState(); return;
+  }
+  if (id === 'token_life_death') {
+    return toast('☠️ 心魔令牌用于发起生死斗，请到「世界」页操作');
+  }
+
   if (id === 'buff_exp') {
     if (!consumeSpecialItem(id, 1)) return toast('没有该道具');
     state.buffs.expUntil = Date.now() + 3600 * 1000;
@@ -1080,7 +1157,9 @@ window.renderSpecialItems = function() {
     const n = state.specialItems[id];
     const div = document.createElement('div');
     div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;';
-    div.innerHTML = `<div><div style="font-weight:bold;color:#ffd700;">${def.icon || '📦'} ${def.name} ×${n}</div><div style="font-size:11px;color:#888;">${def.desc || ''}</div></div><button onclick="useSpecialItem('${id}')" style="padding:6px 12px;background:#9c27b0;color:#fff;border:none;border-radius:6px;font-weight:bold;">使用</button>`;
+    const btnLabel = def.noUse ? '持有' : '使用';
+    const btnStyle = def.noUse ? 'background:#555;color:#aaa;' : 'background:#9c27b0;color:#fff;';
+    div.innerHTML = `<div><div style="font-weight:bold;color:#ffd700;">${def.icon || '📦'} ${def.name} ×${n}</div><div style="font-size:11px;color:#888;">${def.desc || ''}</div></div><button onclick="useSpecialItem('${id}')" style="padding:6px 12px;${btnStyle}border:none;border-radius:6px;font-weight:bold;">${btnLabel}</button>`;
     el.appendChild(div);
   });
 };
@@ -1110,12 +1189,19 @@ function genEquipment(treeLevel, forceQuality) {
 }
 function genPlayerId() { return 'GAME-' + Math.random().toString(36).substr(2, 9).toUpperCase(); }
 function freshState(name) {
-  return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, herbItems: [], demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0, specialItems: {}, keys: { normal: 0, gold: 0, chaos: 0 }, buffs: {}, mounts: { owned: [], equipped: null, exp: {} } };
+  return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, herbItems: [], demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0, specialItems: {}, keys: { normal: 0, gold: 0, chaos: 0 }, buffs: {}, mounts: { owned: [], equipped: null, exp: {} }, camp: 'xian', lifeDeathUsed: 0 };
 }
 function realmTrainCost(realm, realmLevel) { let baseCost = safeMul(1000, Math.pow(10, safeNum(realm, 0))); let levelMult = safeNum(realmLevel, 1); return Math.min(safeClampInf(safeMul(baseCost, levelMult)), 1e18); }
 function realmBreakCost(realm, realmLevel) { let baseCost = safeMul(1000, Math.pow(10, safeNum(realm, 0))); return Math.min(safeClampInf(safeMul(baseCost, 18)), 1e18); }
 function getRealmPower(realm, realmLevel, charLevel) { let baseRealmPower = safeMul(1000, Math.pow(10, safeNum(realm, 0) * 1.5)); let levelBonus = safeMul(safeNum(realmLevel, 1), 100); let charBonus = safeMul(safeNum(charLevel, 1), 50); return safeAdd(safeAdd(baseRealmPower, levelBonus), charBonus); }
 function getReincarnateMult() { return 1 + safeNum(state.reincarnateCount, 0) * 0.01; }
+
+function getCampPrefix() {
+  const c = (state && state.camp) || 'xian';
+  if (c === 'mo') return '魔修·';
+  if (c === 'both') return '仙魔同修·';
+  return '仙修·';
+}
 
 window.WORLD_NAMES = ['凡界', '仙界', '神界', '混沌界', '三千界域', '九霄神域', '太古洪荒', '永恒星海', '混沌源海', '无极天庭', '轮回幽都', '创世神国', '灭世魔渊', '道源圣界', '万法归宗界', '超脱彼岸', '唯一真界', '天道本源', '虚无绝域', '永恒纪元', '终焉重启', '神话纪', '传说彼岸', '至高神座', '道尽轮回外'];
 const REALMS_PER_WORLD = Math.ceil(REALM_NAMES.length / WORLD_NAMES.length);
@@ -1212,11 +1298,29 @@ function checkLevelUp() {
   if (newLevel > safeNum(state.charLevel, 1)) state.charLevel = newLevel;
 }
 
+window.switchCamp = async function(camp) {
+  if (!state) return;
+  if (camp !== 'xian' && camp !== 'mo') return;
+  if (state.camp === camp) return toast('已是该阵营');
+  if (state.camp === 'both') return toast('仙魔同修无法再切换阵营');
+  state.camp = camp;
+  toast(camp === 'mo' ? '👹 已转为修魔（魔气）' : '🧙 已转为修仙（仙气）');
+  renderAll(); await saveState();
+};
+
+window.unlockXianmo = async function() {
+  if (!state) return;
+  if (state.camp === 'both') return toast('已解锁仙魔同修');
+  const cnt = getSpecialCount('token_xianmo');
+  if (cnt <= 0) return toast('缺少「仙魔同修令牌」，该令牌仅作者可发放');
+  consumeSpecialItem('token_xianmo', 1);
+  state.camp = 'both';
+  toast('☯️ 已解锁「仙魔同修」阵营！');
+  renderAll(); await saveState();
+};
+
 window.doAscension = async function() {
-    // 检查是否达到鸿蒙境(飞升前置条件)
-    const hongmengIdx = REALM_NAMES.indexOf('鸿蒙境');
-    if (hongmengIdx >= 0 && state.realm < hongmengIdx) return toast('必须达到鸿蒙境才能开启飞升功能！当前境界：' + (REALM_NAMES[state.realm] || '未知'));
-    if (state.realmLevel < 9) return toast('必须修炼至当前境界 9 层圆满才能飞升');
+    if (state.realmLevel < 1) return toast('境界异常');
     const worldIdx = getCurrentWorldIndex();
     if (worldIdx >= WORLD_NAMES.length - 1) return toast('您已达到最高世界【' + WORLD_NAMES[WORLD_NAMES.length-1] + '】的极限，无法继续飞升！');
     const maxRealmInWorld = maxRealmIdxForWorld(worldIdx);
@@ -1257,14 +1361,13 @@ window.goLowerWorld = async function() {
     const idx = parseInt(targetWorld, 10);
     if (isNaN(idx) || idx < 0 || idx >= WORLD_NAMES.length) return toast('输入无效，请输入 0 到 ' + (WORLD_NAMES.length-1) + ' 之间的数字');
 
-    // 境界不足检测：前往更高世界时，若境界未达到该世界最低境界，禁止进入
     const minRealmNeeded = minRealmIdxForWorld(idx);
     if (safeNum(state.realm, 0) < minRealmNeeded) {
       const needName = REALM_NAMES[minRealmNeeded] || ('第' + minRealmNeeded + '境');
       return toast('境界不足！前往【' + WORLD_NAMES[idx] + '】至少需要境界【' + needName + '】。当前境界不足以支撑更高世界。');
     }
 
-    const cost = 1e11; // 一千亿
+    const cost = 1e11;
     if (safeNum(state.jade, 0) < cost && state.jade !== Infinity) return toast('撕开空间裂缝需要消耗 1000亿仙玉');
     if (state.jade !== Infinity) state.jade = safeAdd(state.jade, -cost);
     state.currentWorldIdx = idx;
@@ -1321,6 +1424,314 @@ window.startPVP = async function(targetId) {
         renderAll(); saveState();
     }, 1500);
 };
+
+// ===== 生死斗实现 =====
+function ldLog(msg) {
+  const el = document.getElementById('ldBattleLog');
+  if (!el) return;
+  el.innerText = msg;
+}
+function ldPixelFlash() {
+  const cast = document.getElementById('ldPixelCast');
+  if (!cast) return;
+  cast.innerHTML = '';
+  // 14x10 像素点阵，随机亮起形成「魔法/攻击」效果
+  const colorPool = ['#00e5ff', '#ffd700', '#ff3b30', '#9c27b0', '#30d158', '#ff00ff'];
+  for (let i = 0; i < 70; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'pixel-cell';
+    if (Math.random() < 0.55) {
+      cell.style.background = colorPool[Math.floor(Math.random() * colorPool.length)];
+      cell.style.boxShadow = '0 0 4px currentColor';
+    }
+    cast.appendChild(cell);
+  }
+  cast.style.animation = 'none';
+  void cast.offsetWidth;
+  cast.style.animation = 'treeBreath 0.4s ease-in-out 2';
+}
+
+window.openLifeDeath = function() {
+  if (ld.active) return toast('生死斗进行中');
+  if (!state) return;
+  const cnt = getSpecialCount('token_life_death');
+  if (cnt <= 0) return toast('缺少「心魔 · 生死决斗令」，该令牌仅作者可发放');
+  const worldIdx = getCurrentWorldIndex();
+  const players = Object.values(allOnlinePlayers).filter(p => {
+    const pWorld = p.currentWorldIdx !== undefined ? p.currentWorldIdx : Math.min(4, Math.floor((p.realm||0)/17));
+    return p.playerId !== playerId && pWorld === worldIdx;
+  });
+  const el = document.getElementById('actionModalContent');
+  document.getElementById('actionModalTitle').innerText = '生死斗 · 选择对手';
+  el.innerHTML = '';
+  if (players.length === 0) {
+    el.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px;">当前世界没有其他道友在线。<br>是否让天道生成一名心魔，以 AI 应战？</div>';
+    const btn = document.createElement('button');
+    btn.className = 'big-btn btn-red';
+    btn.innerText = '☠️ 挑战天道心魔（离线 AI）';
+    btn.onclick = () => startLifeDeath(null);
+    el.appendChild(btn);
+  } else {
+    players.forEach(p => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;';
+      div.innerHTML = `<div><div style="color:#ffd700;">${p.name}</div><div style="font-size:11px;color:#aaa;">战力: ${fmt(p.totalPower||0)}</div></div><button onclick="startLifeDeath('${p.playerId}')" style="padding:6px 12px;background:#ff3b30;color:#fff;border:none;border-radius:6px;font-weight:bold;">生死斗</button>`;
+      el.appendChild(div);
+    });
+    const btn = document.createElement('button');
+    btn.className = 'big-btn btn-red';
+    btn.style.marginTop = '10px';
+    btn.innerText = '☠️ 挑战天道心魔（离线 AI）';
+    btn.onclick = () => startLifeDeath(null);
+    el.appendChild(btn);
+  }
+  document.getElementById('actionModal').style.display = 'flex';
+};
+
+window.startLifeDeath = async function(enemyId) {
+  document.getElementById('actionModal').style.display = 'none';
+  if (ld.active) return;
+  if (!consumeSpecialItem('token_life_death', 1)) return toast('心魔令牌不足');
+  const myStats = calcStats();
+  let enemy = null;
+  let offline = true;
+  if (enemyId && allOnlinePlayers[enemyId]) {
+    enemy = allOnlinePlayers[enemyId];
+    offline = false;
+  }
+  ld.active = true;
+  ld.ended = false;
+  ld.myMaxHp = Math.max(1, safeNum(myStats.hp, 1));
+  ld.myHp = ld.myMaxHp;
+  ld.myAtk = Math.max(1, safeNum(myStats.atk, 1));
+  ld.myCritRate = Math.min(1, safeNum(myStats.critRate, 0.05));
+  ld.myCritDmg = Math.max(1, safeNum(myStats.critDmg, 1.5));
+  ld.enemyCd = {}; ld.myCd = {};
+
+  if (!offline && enemy) {
+    ld.enemyId = enemyId;
+    ld.enemyName = enemy.name || '无名道友';
+    ld.enemyOffline = false;
+    ld.enemyMaxHp = Math.max(1, safeNum(enemy.hp, ld.myMaxHp));
+    ld.enemyAtk = Math.max(1, safeNum(enemy.atk, ld.myAtk));
+    ld.enemyCritRate = 0.05;
+    ld.enemyCritDmg = 1.5;
+  } else {
+    ld.enemyId = null;
+    ld.enemyOffline = true;
+    ld.enemyName = '天道心魔';
+    // 离线 AI：数值基于玩家自身一定比例，保证有压力但可打
+    ld.enemyMaxHp = Math.max(1, Math.round(safeMul(ld.myMaxHp, 0.9 + Math.random() * 0.4)));
+    ld.enemyAtk = Math.max(1, Math.round(safeMul(ld.myAtk, 0.85 + Math.random() * 0.35)));
+    ld.enemyCritRate = 0.08;
+    ld.enemyCritDmg = 1.6;
+  }
+  ld.enemyHp = ld.enemyMaxHp;
+
+  document.getElementById('ldBattlePanel').style.display = 'block';
+  document.getElementById('ldStartBtn').style.display = 'none';
+  document.getElementById('ldMyHpTxt').innerText = fmt(ld.myHp);
+  document.getElementById('ldEnemyHpTxt').innerText = fmt(ld.enemyHp);
+  document.getElementById('ldMyHpBar').style.width = '100%';
+  document.getElementById('ldEnemyHpBar').style.width = '100%';
+  document.getElementById('ldTokenCount').innerText = getSpecialCount('token_life_death');
+  ldLog(`⚔️ 生死斗开始：${state.name} VS ${ld.enemyName}`);
+  renderLdSkillBar();
+  ldPixelFlash();
+  await saveState();
+};
+
+function renderLdSkillBar() {
+  const bar = document.getElementById('ldSkillBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  SPELL_DEFS.forEach(sp => {
+    const btn = document.createElement('button');
+    btn.className = 'ld-skill-btn';
+    const cdLeft = (ld.myCd[sp.id] || 0) - Date.now();
+    const cdSec = Math.max(0, Math.ceil(cdLeft / 1000));
+    let color = '#00c6ff';
+    if (sp.id === 'flame') color = '#ff9500';
+    else if (sp.id === 'ice') color = '#00e5ff';
+    else if (sp.id === 'shield') color = '#ffd700';
+    else if (sp.id === 'wind') color = '#30d158';
+    else if (sp.id === 'heal') color = '#ff69b4';
+    else if (sp.id === 'sword') color = '#9c27b0';
+    btn.style.background = `linear-gradient(135deg,${color},#333)`;
+    btn.innerText = cdSec > 0 ? `${sp.name}\n${cdSec}s` : sp.name;
+    btn.disabled = cdSec > 0 || !ld.active || ld.ended;
+    btn.onclick = () => ldCastSkill(sp.id);
+    bar.appendChild(btn);
+  });
+}
+
+function ldGetMySkillDamage(sp) {
+  const base = ld.myAtk;
+  let dmg = base;
+  let crit = Math.random() < ld.myCritRate;
+  if (sp.id === 'sword') dmg = safeMul(base, 1.0);
+  else if (sp.id === 'flame') dmg = safeMul(base, 1.4);
+  else if (sp.id === 'ice') dmg = safeMul(base, 1.3);
+  else if (sp.id === 'wind') dmg = safeMul(base, 0.9);
+  else if (sp.id === 'shield') dmg = safeMul(base, 0.6);
+  else if (sp.id === 'heal') dmg = safeMul(base, 0.7);
+  if (crit) dmg = safeMul(dmg, ld.myCritDmg);
+  return { dmg, crit };
+}
+function ldGetEnemySkillDamage(sp) {
+  const base = ld.enemyAtk;
+  let dmg = base;
+  let crit = Math.random() < ld.enemyCritRate;
+  if (sp.id === 'sword') dmg = safeMul(base, 1.0);
+  else if (sp.id === 'flame') dmg = safeMul(base, 1.4);
+  else if (sp.id === 'ice') dmg = safeMul(base, 1.3);
+  else if (sp.id === 'wind') dmg = safeMul(base, 0.9);
+  else if (sp.id === 'shield') dmg = safeMul(base, 0.6);
+  else if (sp.id === 'heal') dmg = safeMul(base, 0.7);
+  if (crit) dmg = safeMul(dmg, ld.enemyCritDmg);
+  return { dmg, crit };
+}
+
+window.ldCastSkill = function(skillId) {
+  if (!ld.active || ld.ended) return;
+  const now = Date.now();
+  if ((ld.myCd[skillId] || 0) > now) return;
+  const sp = SPELL_DEFS.find(s => s.id === skillId);
+  if (!sp) return;
+  // 冷却
+  let cd = 2000;
+  if (skillId === 'flame') cd = 6000;
+  else if (skillId === 'ice') cd = 5000;
+  else if (skillId === 'shield') cd = 8000;
+  else if (skillId === 'wind') cd = 3000;
+  else if (skillId === 'heal') cd = 10000;
+  ld.myCd[skillId] = now + cd;
+
+  ldPixelFlash();
+  // 应用效果
+  if (skillId === 'heal') {
+    const heal = Math.round(safeMul(ld.myMaxHp, 0.18));
+    ld.myHp = Math.min(ld.myMaxHp, safeAdd(ld.myHp, heal));
+    ldLog(`💚 我方施放【回春术】，恢复 ${fmt(heal)} 气血`);
+  } else if (skillId === 'shield') {
+    const heal = Math.round(safeMul(ld.myMaxHp, 0.10));
+    ld.myHp = Math.min(ld.myMaxHp, safeAdd(ld.myHp, heal));
+    // 护盾：本次减伤 30%，用简单方式——给敌方攻击临时打七折，这里直接回血+后续伤害降低由本回合敌方攻击折扣
+    ld.shieldTurn = true;
+    ldLog(`🛡️ 我方施放【金刚罩】，恢复 ${fmt(heal)} 气血并减伤`);
+  } else {
+    const { dmg, crit } = ldGetMySkillDamage(sp);
+    ld.enemyHp = safeAdd(ld.enemyHp, -dmg);
+    ldLog(`⚔️ 我方施放【${sp.name}】${crit?'暴击！':''}造成 ${fmt(dmg)} 伤害`);
+  }
+  ldUpdateBars();
+  renderLdSkillBar();
+  if (ld.enemyHp <= 0) { ldEnd(true); return; }
+  // 敌方 AI 自动出招
+  setTimeout(() => ldAiTurn(), 600);
+};
+
+function ldUpdateBars() {
+  const myPct = Math.max(0, Math.min(100, (ld.myHp / ld.myMaxHp) * 100));
+  const enemyPct = Math.max(0, Math.min(100, (ld.enemyHp / ld.enemyMaxHp) * 100));
+  const myBar = document.getElementById('ldMyHpBar');
+  const enemyBar = document.getElementById('ldEnemyHpBar');
+  if (myBar) myBar.style.width = myPct + '%';
+  if (enemyBar) enemyBar.style.width = enemyPct + '%';
+  const myTxt = document.getElementById('ldMyHpTxt');
+  const enemyTxt = document.getElementById('ldEnemyHpTxt');
+  if (myTxt) myTxt.innerText = fmt(Math.max(0, ld.myHp));
+  if (enemyTxt) enemyTxt.innerText = fmt(Math.max(0, ld.enemyHp));
+}
+
+function ldAiTurn() {
+  if (!ld.active || ld.ended) return;
+  const now = Date.now();
+  const ready = SPELL_DEFS.filter(sp => (ld.enemyCd[sp.id] || 0) <= now);
+  if (ready.length === 0) {
+    // 全部冷却，延迟再试
+    setTimeout(ldAiTurn, 600);
+    return;
+  }
+  const sp = ready[randInt(0, ready.length - 1)];
+  let cd = 2000;
+  if (sp.id === 'flame') cd = 6000;
+  else if (sp.id === 'ice') cd = 5000;
+  else if (sp.id === 'shield') cd = 8000;
+  else if (sp.id === 'wind') cd = 3000;
+  else if (sp.id === 'heal') cd = 10000;
+  ld.enemyCd[sp.id] = now + cd;
+
+  ldPixelFlash();
+  if (sp.id === 'heal') {
+    const heal = Math.round(safeMul(ld.enemyMaxHp, 0.18));
+    ld.enemyHp = Math.min(ld.enemyMaxHp, safeAdd(ld.enemyHp, heal));
+    ldLog(`💚 ${ld.enemyName} 施放【回春术】，恢复 ${fmt(heal)} 气血`);
+  } else if (sp.id === 'shield') {
+    const heal = Math.round(safeMul(ld.enemyMaxHp, 0.10));
+    ld.enemyHp = Math.min(ld.enemyMaxHp, safeAdd(ld.enemyHp, heal));
+    ldLog(`🛡️ ${ld.enemyName} 施放【金刚罩】，恢复 ${fmt(heal)} 气血`);
+  } else {
+    const { dmg, crit } = ldGetEnemySkillDamage(sp);
+    let finalDmg = dmg;
+    if (ld.shieldTurn) { finalDmg = safeMul(dmg, 0.7); ld.shieldTurn = false; }
+    ld.myHp = safeAdd(ld.myHp, -finalDmg);
+    ldLog(`💥 ${ld.enemyName} 施放【${sp.name}】${crit?'暴击！':''}造成 ${fmt(finalDmg)} 伤害`);
+  }
+  ldUpdateBars();
+  renderLdSkillBar();
+  if (ld.myHp <= 0) { ldEnd(false); return; }
+}
+
+async function ldEnd(win) {
+  ld.active = false;
+  ld.ended = true;
+  const panel = document.getElementById('ldBattlePanel');
+  const startBtn = document.getElementById('ldStartBtn');
+  if (startBtn) startBtn.style.display = 'block';
+  document.getElementById('ldTokenCount').innerText = getSpecialCount('token_life_death');
+  renderLdSkillBar();
+  if (win) {
+    // 掠夺对方全部修为
+    if (ld.enemyId && !ld.enemyOffline) {
+      try {
+        const snap = await get(ref(db, 'game_players/' + ld.enemyId + '/exp'));
+        const enemyExp = safeNum(snap.val(), 0);
+        if (enemyExp > 0) {
+          state.exp = safeAdd(state.exp, enemyExp);
+          await update(ref(db, 'game_players/' + ld.enemyId), { exp: 0 });
+        }
+        checkLevelUp();
+        ldLog(`🏆 生死斗胜利！掠夺了 ${ld.enemyName} 的全部修为（${fmt(enemyExp)} 经验）`);
+        toast(`🏆 生死斗胜利！掠夺 ${fmt(enemyExp)} 经验`);
+      } catch (e) {
+        ldLog('🏆 生死斗胜利！（对方修为读取失败）');
+        toast('🏆 生死斗胜利！');
+      }
+    } else {
+      // 离线 AI 心魔：按玩家当前经验一定比例给予
+      const gain = safeMul(safeNum(state.exp, 0), 0.5);
+      state.exp = safeAdd(state.exp, gain);
+      checkLevelUp();
+      ldLog(`🏆 斩杀天道心魔！获得 ${fmt(gain)} 经验`);
+      toast(`🏆 斩杀天道心魔！获得 ${fmt(gain)} 经验`);
+    }
+  } else {
+    // 失败：强制轮回重修，不计入转生次数
+    state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0;
+    state.treeLevel = 1; state.spells = {}; state.peaches = 20; state.currentWorldIdx = 0;
+    ldLog('💀 生死斗失败！你被击杀，天道将你打入轮回重修（不计入转生次数）');
+    toast('💀 生死斗失败！你被击杀，强制轮回重修（不计入转生次数）');
+    if (panel) panel.style.display = 'none';
+  }
+  renderAll();
+  await saveState();
+}
+
+function renderLdTokenCount() {
+  const el = document.getElementById('ldTokenCount');
+  if (el && state) el.innerText = getSpecialCount('token_life_death');
+}
 
 window.herbSlots = [null, null, null];
 window.renderAlchemy = function() {
@@ -2202,36 +2613,44 @@ function renderWorldTab() {
   const btnGoBack = document.getElementById('btnGoBack');
   const btnGoLower = document.getElementById('btnGoLower');
 
-  // 飞升按钮显示逻辑：未达最强世界 && 达到当前世界最高境界 && realmLevel=9 && 达到鸿蒙境
-  const hongmengIdx = REALM_NAMES.indexOf('鸿蒙境');
   const maxRealmInWorld = maxRealmIdxForWorld(idx);
-  const canAscend = (idx < WORLD_NAMES.length - 1) && 
-                    (state.realm >= maxRealmInWorld) && 
-                    (state.realmLevel >= 9) &&
-                    (hongmengIdx < 0 || state.realm >= hongmengIdx);
+  // 只判断：未到最强世界 + 当前境界达到当前世界上限
+  const canAscend = (idx < WORLD_NAMES.length - 1) && (safeNum(state.realm, 0) >= maxRealmInWorld);
   if (btnAsc) {
     btnAsc.style.display = canAscend ? 'block' : 'none';
     if (canAscend) {
       btnAsc.innerText = '🚀 飞升到【' + (WORLD_NAMES[idx + 1] || '下一个') + '】';
-    } else if (hongmengIdx >= 0 && state.realm < hongmengIdx) {
-      btnAsc.innerText = '🚀 飞升 (需达到鸿蒙境)';
-    } else if (state.realmLevel < 9) {
-      btnAsc.innerText = '🚀 飞升 (需境界满9层)';
     } else {
       btnAsc.innerText = '🚀 飞升到下一个世界';
     }
   }
 
-  // 当前世界低于真实境界对应世界时，显示「回到原本的世界」
   if (btnGoBack) {
     btnGoBack.style.display = (idx < trueWorld) ? 'block' : 'none';
     btnGoBack.innerText = '🌟 回到原本的世界【' + (WORLD_NAMES[trueWorld] || '') + '】(消耗1000亿仙玉)';
   }
 
-  // 穿梭 / 撕开空间裂缝 始终显示
   if (btnGoLower) {
     btnGoLower.style.display = 'block';
     btnGoLower.innerText = '🌀 穿梭世界 / 撕开空间裂缝 (消耗1000亿仙玉)';
+  }
+
+  renderLdTokenCount();
+  const ldStartBtn = document.getElementById('ldStartBtn');
+  if (ldStartBtn) ldStartBtn.style.display = ld.active ? 'none' : 'block';
+}
+
+function renderCampDisplay() {
+  const el = document.getElementById('campDisplay');
+  if (!el || !state) return;
+  const c = state.camp || 'xian';
+  if (c === 'mo') el.innerText = '魔修（魔气）';
+  else if (c === 'both') el.innerText = '仙魔同修';
+  else el.innerText = '仙修（仙气）';
+  const btnUnlock = document.getElementById('btnXianmoUnlock');
+  if (btnUnlock) {
+    if (c === 'both') btnUnlock.style.opacity = '0.5';
+    else btnUnlock.style.opacity = '1';
   }
 }
 
@@ -2282,7 +2701,7 @@ function renderHome() {
   document.getElementById('profReincarnate').innerText = `轮回 ${state.reincarnateCount||0} 次 | 天赋点 ${state.talentPoints||0}`;
   const stats = calcStats();
   const info = getRealmDisplayInfo();
-  let displayRealm = info.realmName + (info.isSuppressed ? ' (受压制)' : '');
+  let displayRealm = getCampPrefix() + info.realmName + (info.isSuppressed ? ' (受压制)' : '');
   document.getElementById('profRealm').innerText = displayRealm + ' ' + info.level + ' 层';
   document.getElementById('profEquipPower').innerText = `评分 ${fmt(stats.equipPower)}`;
   document.getElementById('profTree').innerText = fmt(state.treeLevel);
@@ -2291,6 +2710,14 @@ function renderHome() {
   if (typeof renderDailyGoals === 'function') renderDailyGoals();
   if (typeof renderMounts === 'function') renderMounts();
   if (typeof renderAllItemsOverview === 'function') renderAllItemsOverview();
+  
+  // Google 绑定状态
+  const bindText = document.getElementById('bindStatusText');
+  if (bindText && auth && auth.currentUser) {
+    bindText.innerText = '已绑定: ' + auth.currentUser.email;
+  } else if (bindText) {
+    bindText.innerText = '未绑定 (换手机可用 Google 登入)';
+  }
 }
 function renderGifts() {
   const el = document.getElementById('giftList'); el.innerHTML = '';
@@ -2382,7 +2809,7 @@ function renderAll() {
   let ascBonus = getAscensionBonus();
   document.getElementById('headerName').innerText = state.name || '无名道友';
   const info = getRealmDisplayInfo();
-  let displayRealm = info.realmName + (info.isSuppressed ? ' (受压制)' : '');
+  let displayRealm = getCampPrefix() + info.realmName + (info.isSuppressed ? ' (受压制)' : '');
   document.getElementById('headerRealm').innerText = worldStr + ' · ' + displayRealm + ' ' + info.level + ' 层 · Lv.' + (state.charLevel||1) + ' (飞升率+' + ascBonus + '%)';
   document.getElementById('headerJade').innerText = fmt(state.jade);
   document.getElementById('headerPeaches').innerText = fmt(state.peaches);
@@ -2402,7 +2829,7 @@ function renderAll() {
   document.getElementById('towerProgress') && (document.getElementById('towerProgress').innerText = (state.towerLevel||0) + ' / ∞');
   renderEquipment(); renderInventory(); renderPetsSpirits(); renderGifts();
   renderSect(); renderHome(); renderMails(); renderFriends(); renderBag();
-  renderAuction(); renderSecretRealms(); renderRankTabs(); renderWorldTab(); renderAlchemy();
+  renderAuction(); renderSecretRealms(); renderRankTabs(); renderWorldTab(); renderAlchemy(); renderCampDisplay();
   document.getElementById('realmDisplay').innerText = displayRealm + ' ' + info.level + ' 层';
   document.getElementById('extraDropDisplay').innerText = state.extraDropLevel || 0;
   document.getElementById('reincarnateBonus').innerText = state.reincarnateCount || 0;
@@ -2854,7 +3281,6 @@ window.claimMail = async function(idx) {
       if (a.equipment) {
         const eqCount = parseInt(a.equipment.count) || 1;
         if(!state.inventory) state.inventory = [];
-        // 从作者端发送的装备格式可能不同，尝试多种格式
         if (Array.isArray(a.equipment)) {
           a.equipment.forEach(eq => { if(eq) state.inventory.push(eq); });
         } else {
@@ -3013,7 +3439,7 @@ window.switchEncyTab = function(type, btn) {
     el.appendChild(div);
   };
   if (type === 'realm') {
-    REALM_NAMES.forEach((name, idx) => row('第 ' + (idx+1) + ' 境', name, state && state.realm === idx));
+    REALM_NAMES.forEach((name, idx) => row('第 ' + (idx+1) + ' 境', getCampPrefix() + name, state && state.realm === idx));
   } else if (type === 'pet') {
     PET_NAMES.forEach((name, idx) => {
       const own = state && state.pets && state.pets.owned && state.pets.owned.includes(idx);
@@ -3075,6 +3501,7 @@ function startTick() {
         changed = true;
       }
     }
+    if (ld.active) renderLdSkillBar();
     if (changed) { renderAll(); await saveState(); }
   }, 1000);
 }
@@ -3109,6 +3536,7 @@ async function loadPlayer() {
       if(!state.keys) state.keys = { normal: 0, gold: 0, chaos: 0 };
       if(!state.buffs) state.buffs = {};
       if(!state.mounts) state.mounts = { owned: [], equipped: null, exp: {} };
+      if(!state.camp) state.camp = 'xian';
     } else {
       state = freshState(playerName);
       await set(playerRef, state);
@@ -3171,6 +3599,34 @@ async function loadPlayer() {
   } catch (e) { authErr('读取存档失败: ' + e.message); return false; }
 }
 
+// ===== Google 登录逻辑（重定向版） =====
+window.doGoogleLogin = async function() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithRedirect(provider);
+  } catch(e) {
+    console.error(e);
+    alert('发起 Google 登录失败: ' + e.message);
+  }
+};
+
+// ===== 绑定 Google 逻辑（重定向版） =====
+window.bindGoogleAccount = async function() {
+  try {
+    if (auth.currentUser) {
+      return alert('当前已经登录了 Google 账号。');
+    }
+    sessionStorage.setItem('bind_target_playerId', playerId);
+    sessionStorage.setItem('bind_target_playerName', playerName);
+    
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithRedirect(provider);
+  } catch(e) {
+    console.error(e);
+    alert('发起绑定失败: ' + e.message);
+  }
+};
+
 async function boot() {
   const timeoutId = setTimeout(() => {
     const l = document.getElementById('loadingText');
@@ -3186,9 +3642,74 @@ async function boot() {
       firebase.initializeApp(firebaseConfig);
     }
     db = firebase.database();
+    auth = firebase.auth();
     window.__gameBooted = true;
     document.getElementById('loading').style.display = 'none';
     checkOneClickBtn();
+    
+    // 显示 Google 登录按钮
+    const btnG = document.getElementById('btnGoogleLogin');
+    if (btnG) btnG.style.display = 'block';
+
+    // 检测 Google 重定向返回结果
+    auth.getRedirectResult().then(async function(result) {
+      if (result.user) {
+        const user = result.user;
+        const isBinding = sessionStorage.getItem('bind_target_playerId');
+        
+        if (isBinding) {
+          const targetPlayerId = sessionStorage.getItem('bind_target_playerId');
+          const targetPlayerName = sessionStorage.getItem('bind_target_playerName');
+          sessionStorage.removeItem('bind_target_playerId');
+          sessionStorage.removeItem('bind_target_playerName');
+
+          const snap = await get(ref(db, 'game_google_binds/' + user.uid));
+          if (snap.exists() && snap.val().playerId !== targetPlayerId) {
+            alert('该 Google 账号已被其他玩家绑定！');
+            if (auth.currentUser) await auth.signOut();
+            return;
+          }
+          await set(ref(db, 'game_google_binds/' + user.uid), { playerId: targetPlayerId, playerName: targetPlayerName });
+          alert('✅ 绑定成功！下次可直接用 Google 登录');
+        } else {
+          const snap = await get(ref(db, 'game_google_binds/' + user.uid));
+          if (snap.exists()) {
+            const data = snap.val();
+            playerId = data.playerId;
+            playerName = data.playerName;
+            localStorage.setItem('game_player_id', playerId);
+            localStorage.setItem('game_player_name', playerName);
+          } else {
+            const bindName = prompt(`Google 账号 ${user.email} 尚未绑定游戏角色。\n请输入你的玩家名进行绑定（如果输入新名字，将直接创建新号）：`);
+            if (!bindName) { await auth.signOut(); return; }
+            
+            const accSnap = await get(ref(db, 'game_accounts/' + bindName));
+            if (accSnap.exists()) {
+              const accData = accSnap.val();
+              playerId = accData.playerId;
+              playerName = accData.name;
+              await set(ref(db, 'game_google_binds/' + user.uid), { playerId, playerName });
+              localStorage.setItem('game_player_id', playerId);
+              localStorage.setItem('game_player_name', playerName);
+              alert('绑定成功！');
+            } else {
+              if(!confirm('未找到该账号，是否直接创建新号？')) { await auth.signOut(); return; }
+              const newId = genPlayerId();
+              await set(ref(db, 'game_accounts/' + bindName), { name: bindName, password: btoa('google_' + user.uid), playerId: newId, createdAt: Date.now() });
+              await set(ref(db, 'game_players/' + newId), freshState(bindName));
+              await set(ref(db, 'game_google_binds/' + user.uid), { playerId: newId, playerName: bindName });
+              
+              playerId = newId; playerName = bindName;
+              localStorage.setItem('game_player_id', newId);
+              localStorage.setItem('game_player_name', bindName);
+            }
+          }
+        }
+      }
+    }).catch(function(error) {
+      if (error.code !== 'auth/no-auth-event') console.error('Google 跳转返回错误:', error);
+    });
+
     if (playerId && playerName) {
       const existAcc = await get(ref(db, 'game_accounts/' + playerName));
       if (existAcc.exists() && existAcc.val().playerId === playerId) {
