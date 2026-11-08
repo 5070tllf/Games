@@ -98,12 +98,14 @@
 			.rank-tab-btn { padding:6px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#888; border-radius:8px; font-size:12px; font-weight:bold; white-space:nowrap; cursor:pointer; flex-shrink:0; }
 			.rank-tab-btn.active { background:rgba(0,198,255,0.2); border-color:#00c6ff; color:#00c6ff; }
 			.rank-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; }
-			.pixel-stage { position:relative; width:100%; height:180px; background:radial-gradient(circle at 50% 60%, rgba(80,0,120,0.5), rgba(0,0,0,0.9)); border-radius:14px; overflow:hidden; margin-bottom:10px; }
-			.pixel-cast { position:absolute; top:14%; left:50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(7,4px); grid-auto-rows:4px; gap:1px; }
-			.pixel-cell { width:4px; height:4px; background:transparent; }
+			.pixel-stage { position:relative; width:100%; height:200px; background:radial-gradient(circle at 50% 65%, rgba(60,0,90,0.6), rgba(0,0,0,0.95)); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+			.pixel-cast { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:grid; grid-template-columns:repeat(26,5px); grid-auto-rows:5px; gap:1px; }
+			.pixel-cell { width:5px; height:5px; background:transparent; }
 			.ld-skill-bar { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px; }
 			.ld-skill-btn { padding:10px 4px; font-size:11px; font-weight:800; border:none; border-radius:10px; cursor:pointer; color:#fff; }
 			.ld-skill-btn:disabled { opacity:0.35; cursor:not-allowed; }
+			.constitution-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:800; border:1px solid; }
+			.num-row { padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:13px; display:flex; justify-content:space-between; gap:8px; }
 		</style>
 
 		<script>
@@ -221,6 +223,7 @@
 						<div class="header-realm" id="headerRealm">
 							凡界 · 炼气 1 层 · Lv.1
 						</div>
+						<div id="headerConstitution" style="margin-top:3px;"></div>
 					</div>
 					<div style="display:flex; align-items:center;">
 						<div class="header-currency">
@@ -472,6 +475,9 @@
 								style="color:#ffd700;"
 							></span>
 						</div>
+						<div style="font-size:13px;margin-bottom:10px;">
+							体质：<span id="constitutionDisplay" style="color:#ff9500;font-weight:bold;">凡体</span>
+						</div>
 						<div
 							style="font-size:12px;color:#00c6ff;margin-bottom:10px;"
 						>
@@ -577,681 +583,202 @@
 					</div>
 					<div class="card">
 						<div class="card-title">💎 仙玉专属商城</div>
-						<button
-							class="big-btn btn-jade"
-							onclick="buyJadeItem('hourglass')"
-						>
-							⏳ 时光沙漏 (减少10分钟CD) - 1仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buyJadeItem('ticket')"
-						>
-							🎫 副本挑战令 (妖王塔次数各+5) - 3仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buyJadeItem('pet')"
-						>
-							🐾 极品灵兽盲盒 - 10仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buyJadeItem('spirit')"
-						>
-							👻 极品精怪盲盒 - 10仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buyJadeItem('pill')"
-						>
-							💊 随机仙丹盲盒 - 20仙玉
-						</button>
-						<button
-							class="big-btn btn-purple"
-							onclick="buyAscensionPill()"
-						>
-							💊 购买飞升丹 (飞升成功率+1%可叠加) - 1亿仙玉
-						</button>
+						<button class="big-btn btn-jade" onclick="buyJadeItem('hourglass')">⏳ 时光沙漏 (减少10分钟CD) - 1仙玉</button>
+						<button class="big-btn btn-jade" onclick="buyJadeItem('ticket')">🎫 副本挑战令 (妖王塔次数各+5) - 3仙玉</button>
+						<button class="big-btn btn-jade" onclick="buyJadeItem('pet')">🐾 极品灵兽盲盒 - 10仙玉</button>
+						<button class="big-btn btn-jade" onclick="buyJadeItem('spirit')">👻 极品精怪盲盒 - 10仙玉</button>
+						<button class="big-btn btn-jade" onclick="buyJadeItem('pill')">💊 随机仙丹盲盒 - 20仙玉</button>
+						<button class="big-btn btn-purple" onclick="buyAscensionPill()">💊 购买飞升丹 (飞升成功率+1%可叠加) - 1亿仙玉</button>
+					</div>
+					<div class="card">
+						<div class="card-title">🪨 体质觉醒石</div>
+						<div style="font-size:11px;color:#888;margin-bottom:10px;">不同品级觉醒石对应不同体质区间。神州石仅作者发放。</div>
+						<button class="big-btn btn-jade" onclick="buyAwakenStone('normal')">🪨 普通觉醒石 (1~20) - 10万仙玉</button>
+						<button class="big-btn btn-jade" onclick="buyAwakenStone('spirit')">🪨 灵品觉醒石 (21~40) - 20万仙玉</button>
+						<button class="big-btn btn-purple" onclick="buyAwakenStone('xian')">🪨 仙品觉醒石 (41~60) - 40万仙玉</button>
+						<button class="big-btn btn-gold" onclick="buyAwakenStone('shen')">🪨 神品觉醒石 (61~80) - 80万仙玉</button>
+						<button class="big-btn btn-red" onclick="buyAwakenStone('dao')">🪨 道品觉醒石 (81~100) - 160万仙玉</button>
+						<div style="font-size:11px;color:#ff9500;margin-top:6px;">神州石：作者专属发放，可觉醒 101~111</div>
 					</div>
 					<div class="card">
 						<div class="card-title">🛒 仙桃杂货铺</div>
-						<button
-							class="big-btn btn-orange"
-							onclick="buyHerb('low')"
-						>
-							🌿 购买低级药材包 (100仙桃)
-						</button>
-						<button
-							class="big-btn btn-orange"
-							onclick="buyJadeItem('ticket')"
-						>
-							🎫 购买 1 张挑战令 (50仙桃)
-						</button>
+						<button class="big-btn btn-orange" onclick="buyHerb('low')">🌿 购买低级药材包 (100仙桃)</button>
+						<button class="big-btn btn-orange" onclick="buyJadeItem('ticket')">🎫 购买 1 张挑战令 (50仙桃)</button>
 					</div>
 					<div class="card">
 						<div class="card-title">🌿 高级药材与炼丹</div>
-						<button
-							class="big-btn btn-green"
-							onclick="buyHerb('mid')"
-						>
-							🌿 购买中级药材包 (10仙玉)
-						</button>
-						<button
-							class="big-btn btn-green"
-							onclick="buyHerb('high')"
-						>
-							🌿 购买高级药材包 (50仙玉)
-						</button>
-						<div style="font-size:11px;color:#888;margin-top:6px;">
-							药材请到「炼丹」页手动炼制。低级包易出低品，高级包才有更高品质概率。
-						</div>
+						<button class="big-btn btn-green" onclick="buyHerb('mid')">🌿 购买中级药材包 (10仙玉)</button>
+						<button class="big-btn btn-green" onclick="buyHerb('high')">🌿 购买高级药材包 (50仙玉)</button>
+						<div style="font-size:11px;color:#888;margin-top:6px;">药材请到「炼丹」页手动炼制。低级包易出低品，高级包才有更高品质概率。</div>
 					</div>
 					<div class="card">
 						<div class="card-title">📦 宝箱商城</div>
-						<button
-							class="big-btn btn-orange"
-							onclick="buySpecialItem('chest_wood')"
-						>
-							🪵 木宝箱 - 50仙桃
-						</button>
-						<button
-							class="big-btn btn-orange"
-							onclick="buySpecialItem('chest_bronze')"
-						>
-							🥉 青铜宝箱 - 200仙桃
-						</button>
-						<button
-							class="big-btn btn-blue"
-							onclick="buySpecialItem('chest_silver')"
-						>
-							🥈 白银宝箱 - 5仙玉
-						</button>
-						<button
-							class="big-btn btn-gold"
-							onclick="buySpecialItem('chest_gold')"
-						>
-							🥇 黄金宝箱 - 20仙玉
-						</button>
-						<button
-							class="big-btn btn-purple"
-							onclick="buySpecialItem('chest_diamond')"
-						>
-							💎 钻石宝箱 - 80仙玉
-						</button>
-						<button
-							class="big-btn btn-purple"
-							onclick="buySpecialItem('chest_mystery')"
-						>
-							❓ 神秘宝箱 - 30仙玉
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buySpecialItem('chest_vip')"
-						>
-							👑 氪金至尊宝箱 - 200仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buySpecialItem('key_normal')"
-						>
-							🔑 普通钥匙 x5 - 100仙桃
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buySpecialItem('key_gold')"
-						>
-							🔑 黄金钥匙 x1 - 15仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buySpecialItem('buff_exp')"
-						>
-							📜 双倍经验符(1小时) - 10仙玉
-						</button>
-						<button
-							class="big-btn btn-jade"
-							onclick="buySpecialItem('buff_drop')"
-						>
-							🍀 幸运掉落符(1小时) - 15仙玉
-						</button>
+						<button class="big-btn btn-orange" onclick="buySpecialItem('chest_wood')">🪵 木宝箱 - 50仙桃</button>
+						<button class="big-btn btn-orange" onclick="buySpecialItem('chest_bronze')">🥉 青铜宝箱 - 200仙桃</button>
+						<button class="big-btn btn-blue" onclick="buySpecialItem('chest_silver')">🥈 白银宝箱 - 5仙玉</button>
+						<button class="big-btn btn-gold" onclick="buySpecialItem('chest_gold')">🥇 黄金宝箱 - 20仙玉</button>
+						<button class="big-btn btn-purple" onclick="buySpecialItem('chest_diamond')">💎 钻石宝箱 - 80仙玉</button>
+						<button class="big-btn btn-purple" onclick="buySpecialItem('chest_mystery')">❓ 神秘宝箱 - 30仙玉</button>
+						<button class="big-btn btn-red" onclick="buySpecialItem('chest_vip')">👑 氪金至尊宝箱 - 200仙玉</button>
+						<button class="big-btn btn-jade" onclick="buySpecialItem('key_normal')">🔑 普通钥匙 x5 - 100仙桃</button>
+						<button class="big-btn btn-jade" onclick="buySpecialItem('key_gold')">🔑 黄金钥匙 x1 - 15仙玉</button>
+						<button class="big-btn btn-jade" onclick="buySpecialItem('buff_exp')">📜 双倍经验符(1小时) - 10仙玉</button>
+						<button class="big-btn btn-jade" onclick="buySpecialItem('buff_drop')">🍀 幸运掉落符(1小时) - 15仙玉</button>
 					</div>
 					<div class="card">
 						<div class="card-title">👑 氪金礼包（共30+种）</div>
-						<div
-							style="font-size:11px;color:#888;margin-bottom:8px;"
-						>
-							点击查看礼包与售价，购买请联系作者发放
-						</div>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_starter')"
-						>
-							💎 新手启航礼包 - 6元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_daily')"
-						>
-							💎 每日特惠礼包 - 12元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_weekly')"
-						>
-							💎 每周精选礼包 - 30元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_month')"
-						>
-							💎 月度尊享礼包 - 98元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_vip1')"
-						>
-							💎 VIP小资礼包 - 18元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_vip2')"
-						>
-							💎 VIP进阶礼包 - 50元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_vip3')"
-						>
-							💎 VIP至尊礼包 - 128元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_mount1')"
-						>
-							💎 坐骑礼包·凡 - 25元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_mount2')"
-						>
-							💎 坐骑礼包·灵 - 68元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_mount3')"
-						>
-							💎 坐骑礼包·神 - 168元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_mount4')"
-						>
-							💎 坐骑礼包·混沌 - 328元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_realm')"
-						>
-							💎 秘境冲刺礼包 - 45元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_boss')"
-						>
-							💎 妖王讨伐礼包 - 55元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_sect')"
-						>
-							💎 宗门兴旺礼包 - 40元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_pill')"
-						>
-							💎 丹道礼包 - 35元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_equip')"
-						>
-							💎 神兵利器礼包 - 88元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_lucky')"
-						>
-							💎 欧皇降临礼包 - 66元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_exp')"
-						>
-							💎 修炼加速礼包 - 28元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_key')"
-						>
-							💎 钥匙囤货礼包 - 60元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_jade1')"
-						>
-							💎 仙玉小包 - 6元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_jade2')"
-						>
-							💎 仙玉中包 - 30元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_jade3')"
-						>
-							💎 仙玉大包 - 98元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_jade4')"
-						>
-							💎 仙玉巨包 - 298元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_ultimate')"
-						>
-							💎 创世至尊礼包 - 648元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_first')"
-						>
-							💎 首充专属礼包 - 1元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_comeback')"
-						>
-							💎 回归礼包 - 免费
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_festival')"
-						>
-							💎 节日限定礼包 - 50元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_tower')"
-						>
-							💎 通天塔礼包 - 42元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_pet')"
-						>
-							💎 灵宠大礼包 - 88元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_chaos')"
-						>
-							💎 混沌霸业礼包 - 198元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_dao')"
-						>
-							💎 问道礼包 - 128元
-						</button>
-						<button
-							class="big-btn btn-red"
-							onclick="buyCashPack('pack_legend')"
-						>
-							💎 传说主宰礼包 - 448元
-						</button>
+						<div style="font-size:11px;color:#888;margin-bottom:8px;">点击查看礼包与售价，购买请联系作者发放</div>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_starter')">💎 新手启航礼包 - 6元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_daily')">💎 每日特惠礼包 - 12元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_weekly')">💎 每周精选礼包 - 30元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_month')">💎 月度尊享礼包 - 98元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_vip1')">💎 VIP小资礼包 - 18元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_vip2')">💎 VIP进阶礼包 - 50元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_vip3')">💎 VIP至尊礼包 - 128元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_mount1')">💎 坐骑礼包·凡 - 25元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_mount2')">💎 坐骑礼包·灵 - 68元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_mount3')">💎 坐骑礼包·神 - 168元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_mount4')">💎 坐骑礼包·混沌 - 328元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_realm')">💎 秘境冲刺礼包 - 45元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_boss')">💎 妖王讨伐礼包 - 55元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_sect')">💎 宗门兴旺礼包 - 40元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_pill')">💎 丹道礼包 - 35元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_equip')">💎 神兵利器礼包 - 88元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_lucky')">💎 欧皇降临礼包 - 66元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_exp')">💎 修炼加速礼包 - 28元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_key')">💎 钥匙囤货礼包 - 60元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_jade1')">💎 仙玉小包 - 6元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_jade2')">💎 仙玉中包 - 30元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_jade3')">💎 仙玉大包 - 98元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_jade4')">💎 仙玉大包 - 298元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_ultimate')">💎 创世至尊礼包 - 648元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_first')">💎 首充专属礼包 - 1元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_comeback')">💎 回归礼包 - 免费</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_festival')">💎 节日限定礼包 - 50元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_tower')">💎 通天塔礼包 - 42元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_pet')">💎 灵宠大礼包 - 88元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_chaos')">💎 混沌霸业礼包 - 198元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_dao')">💎 问道礼包 - 128元</button>
+						<button class="big-btn btn-red" onclick="buyCashPack('pack_legend')">💎 传说主宰礼包 - 448元</button>
 					</div>
 				</div>
 				<div class="page" id="page-alchemy">
 					<div class="card">
 						<div class="card-title">🔮 炼丹炉</div>
-						<div
-							style="font-size:12px;color:#aaa;margin-bottom:10px;"
-						>
-							请选择3份药材放入炼丹炉。带有灵智的药材，年份加成翻倍，极大概率炼出带有特殊属性的高级丹药！
-						</div>
-						<div
-							id="herbSlots"
-							style="display:flex; justify-content:space-between; margin-bottom:15px;"
-						></div>
-						<button
-							class="big-btn btn-purple"
-							onclick="doManualCraft()"
-						>
-							🔥 开炉炼丹
-						</button>
+						<div style="font-size:12px;color:#aaa;margin-bottom:10px;">请选择3份药材放入炼丹炉。带有灵智的药材，年份加成翻倍，极大概率炼出带有特殊属性的高级丹药！</div>
+						<div id="herbSlots" style="display:flex; justify-content:space-between; margin-bottom:15px;"></div>
+						<button class="big-btn btn-purple" onclick="doManualCraft()">🔥 开炉炼丹</button>
 					</div>
 					<div class="card">
 						<div class="card-title">🌿 我的药材</div>
-						<div
-							id="myHerbList"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="myHerbList" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 				</div>
 				<div class="page" id="page-sect">
 					<div id="sectNotJoined">
 						<div class="card">
 							<div class="card-title">🏯 加入宗门</div>
-							<div
-								id="sectList"
-								style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"
-							></div>
-							<button
-								class="big-btn btn-gold"
-								onclick="createSect()"
-							>
-								创建宗门 (100仙玉)
-							</button>
+							<div id="sectList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+							<button class="big-btn btn-gold" onclick="createSect()">创建宗门 (100仙玉)</button>
 						</div>
 					</div>
 					<div id="sectJoined" style="display:none;">
 						<div class="card">
 							<div class="card-title">🏯 我的宗门</div>
-							<div
-								id="sectInfo"
-								style="font-size:13px;color:#aaa;margin-bottom:10px;"
-							></div>
-							<div
-								id="sectPosition"
-								style="font-size:15px;font-weight:bold;color:#ffd700;margin-bottom:15px;text-align:center;"
-							></div>
-							<button
-								class="big-btn btn-green"
-								onclick="donateSect()"
-							>
-								宗门捐献 (1000仙桃换10贡献)
-							</button>
+							<div id="sectInfo" style="font-size:13px;color:#aaa;margin-bottom:10px;"></div>
+							<div id="sectPosition" style="font-size:15px;font-weight:bold;color:#ffd700;margin-bottom:15px;text-align:center;"></div>
+							<button class="big-btn btn-green" onclick="donateSect()">宗门捐献 (1000仙桃换10贡献)</button>
 						</div>
 						<div class="card">
 							<div class="card-title">📜 宗门任务 & 副本</div>
-							<button
-								class="big-btn btn-blue"
-								onclick="doSectQuest()"
-							>
-								完成宗门日常 (获得贡献)
-							</button>
-							<button
-								class="big-btn btn-purple"
-								onclick="challengeSectBoss()"
-							>
-								挑战宗门Boss
-							</button>
+							<button class="big-btn btn-blue" onclick="doSectQuest()">完成宗门日常 (获得贡献)</button>
+							<button class="big-btn btn-purple" onclick="challengeSectBoss()">挑战宗门Boss</button>
 						</div>
 						<div class="card">
 							<div class="card-title">🏪 宗门内部商店</div>
-							<button
-								class="big-btn btn-gold"
-								onclick="openAddSectItem()"
-								id="btnAddSectItem"
-							>
-								上架物品 (宗主/长老专属)
-							</button>
-							<div
-								id="sectShopList"
-								style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"
-							></div>
+							<button class="big-btn btn-gold" onclick="openAddSectItem()" id="btnAddSectItem">上架物品 (宗主/长老专属)</button>
+							<div id="sectShopList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
 						</div>
 						<div class="card">
 							<div class="card-title">🔨 拍卖行</div>
-							<button
-								class="big-btn btn-jade"
-								onclick="openAuctionAdd()"
-							>
-								上架拍卖品 (宗主专属)
-							</button>
-							<div
-								id="auctionList"
-								style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"
-							></div>
+							<button class="big-btn btn-jade" onclick="openAuctionAdd()">上架拍卖品 (宗主专属)</button>
+							<div id="auctionList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
 						</div>
 					</div>
 				</div>
 				<div class="page" id="page-world">
 					<div class="card">
 						<div class="card-title">🌌 三千大世界</div>
-						<div
-							style="font-size:13px;color:#ccc;line-height:1.8; margin-bottom:15px;"
-						>
-							当前世界：<span
-								id="worldDisplay"
-								style="color:#00e5ff;font-weight:bold;"
-								>凡界</span
-							><br />
-							<span style="font-size:11px;color:#ff9500;"
-								>※ 下界会受到天道压制，境界与属性受限。</span
-							>
+						<div style="font-size:13px;color:#ccc;line-height:1.8; margin-bottom:15px;">
+							当前世界：<span id="worldDisplay" style="color:#00e5ff;font-weight:bold;">凡界</span><br />
+							<span style="font-size:11px;color:#ff9500;">※ 下界会受到天道压制，境界与属性受限。</span>
 						</div>
-						<button
-							class="big-btn btn-purple"
-							id="btnAscend"
-							onclick="doAscension()"
-							style="display:none;"
-						>
-							🚀 飞升到下一个世界
-						</button>
-						<button
-							class="big-btn btn-jade"
-							id="btnGoLower"
-							onclick="goLowerWorld()"
-							style="display:block;"
-						>
-							🌀 穿梭世界 / 撕开空间裂缝 (消耗1000亿仙玉)
-						</button>
-						<button
-							class="big-btn btn-gold"
-							id="btnGoBack"
-							onclick="goBackToTopWorld()"
-							style="display:none; margin-top:10px;"
-						>
-							🌟 回到原本的世界
-						</button>
+						<button class="big-btn btn-purple" id="btnAscend" onclick="doAscension()" style="display:none;">🚀 飞升到下一个世界</button>
+						<button class="big-btn btn-jade" id="btnGoLower" onclick="goLowerWorld()" style="display:block;">🌀 穿梭世界 / 撕开空间裂缝 (消耗1000亿仙玉)</button>
+						<button class="big-btn btn-gold" id="btnGoBack" onclick="goBackToTopWorld()" style="display:none; margin-top:10px;">🌟 回到原本的世界</button>
 					</div>
 					<div class="card">
 						<div class="card-title">⚔️ 天道斗法 (PVP)</div>
-						<div
-							style="font-size:12px;color:#aaa;margin-bottom:10px;"
-						>
-							在同世界内寻找道友单挑，胜者可得对方部分修为！
-						</div>
-						<button class="big-btn btn-red" onclick="openPVPList()">
-							🩸 寻找对手切磋
-						</button>
+						<div style="font-size:12px;color:#aaa;margin-bottom:10px;">在同世界内寻找道友单挑，胜者可得对方部分修为！</div>
+						<button class="big-btn btn-red" onclick="openPVPList()">🩸 寻找对手切磋</button>
 					</div>
 					<div class="card" style="border-color:#8b0000;">
-						<div class="card-title" style="color:#ff3b30;">
-							☠️ 生死斗
-						</div>
-						<div
-							style="font-size:12px;color:#aaa;margin-bottom:10px;"
-						>
-							消耗 1 枚「心魔 ·
-							生死决斗令」发起。胜者掠夺对方全部修为；败者被击杀，强制轮回重修（不计入转生次数）。对方离线则由
-							AI 自动出招。
-						</div>
-						<div
-							style="font-size:12px;color:#ffd700;margin-bottom:8px;"
-						>
-							当前令牌：<span id="ldTokenCount">0</span> 枚
-						</div>
+						<div class="card-title" style="color:#ff3b30;">☠️ 生死斗</div>
+						<div style="font-size:12px;color:#aaa;margin-bottom:10px;">消耗 1 枚「心魔 · 生死决斗令」发起。胜者掠夺对方全部修为；败者被击杀，强制轮回重修（不计入转生次数）。对方离线则由 AI 自动出招。</div>
+						<div style="font-size:12px;color:#ffd700;margin-bottom:8px;">当前令牌：<span id="ldTokenCount">0</span> 枚</div>
 						<div id="ldBattlePanel" style="display:none;">
 							<div class="pixel-stage">
 								<div class="pixel-cast" id="ldPixelCast"></div>
-								<div
-									id="ldBattleLog"
-									style="position:absolute;bottom:8px;left:8px;right:8px;font-size:11px;color:#ccc;max-height:60px;overflow:hidden;line-height:1.4;"
-								></div>
+								<div id="ldBattleLog" style="position:absolute;bottom:8px;left:8px;right:8px;font-size:11px;color:#ccc;max-height:60px;overflow:hidden;line-height:1.4;"></div>
 							</div>
-							<div style="font-size:12px;color:#30d158;">
-								我方 HP <span id="ldMyHpTxt">0</span>
-							</div>
+							<div style="font-size:12px;color:#30d158;">我方 HP <span id="ldMyHpTxt">0</span></div>
 							<div class="battle-hp">
-								<div
-									class="battle-hp-fill"
-									id="ldMyHpBar"
-									style="width:100%;background:linear-gradient(90deg,#30d158,#00c6ff);"
-								></div>
+								<div class="battle-hp-fill" id="ldMyHpBar" style="width:100%;background:linear-gradient(90deg,#30d158,#00c6ff);"></div>
 							</div>
-							<div style="font-size:12px;color:#ff3b30;">
-								敌方 HP <span id="ldEnemyHpTxt">0</span>
-							</div>
+							<div style="font-size:12px;color:#ff3b30;">敌方 HP <span id="ldEnemyHpTxt">0</span></div>
 							<div class="battle-hp">
-								<div
-									class="battle-hp-fill"
-									id="ldEnemyHpBar"
-									style="width:100%;background:linear-gradient(90deg,#ff3b30,#ff8c00);"
-								></div>
+								<div class="battle-hp-fill" id="ldEnemyHpBar" style="width:100%;background:linear-gradient(90deg,#ff3b30,#ff8c00);"></div>
 							</div>
 							<div class="ld-skill-bar" id="ldSkillBar"></div>
 						</div>
-						<button
-							class="big-btn btn-red"
-							id="ldStartBtn"
-							onclick="openLifeDeath()"
-						>
-							☠️ 发起生死斗
-						</button>
+						<button class="big-btn btn-red" id="ldStartBtn" onclick="openLifeDeath()">☠️ 发起生死斗</button>
 					</div>
 				</div>
 				<div class="page" id="page-bag">
 					<div class="card">
 						<div class="card-title">🎒 我的储物袋</div>
-						<div style="font-size:14px;margin-bottom:10px;">
-							💎 仙玉：<span
-								id="bagJade"
-								style="color:#00e5ff;font-weight:bold;"
-								>0</span
-							>
-						</div>
-						<div style="font-size:14px;margin-bottom:10px;">
-							🍑 仙桃：<span
-								id="bagPeaches"
-								style="color:#ff9500;font-weight:bold;"
-								>0</span
-							>
-						</div>
-						<div style="font-size:14px;margin-bottom:10px;">
-							🌿 药材：<span
-								id="bagHerbs"
-								style="color:#30d158;font-weight:bold;"
-								>0</span
-							>
-						</div>
-						<div style="font-size:14px;margin-bottom:10px;">
-							🔑 钥匙：普通
-							<span
-								id="bagKeyNormal"
-								style="color:#fff;font-weight:bold;"
-								>0</span
-							>
-							· 黄金
-							<span
-								id="bagKeyGold"
-								style="color:#ffd700;font-weight:bold;"
-								>0</span
-							>
-							· 混沌
-							<span
-								id="bagKeyChaos"
-								style="color:#e040fb;font-weight:bold;"
-								>0</span
-							>
-						</div>
+						<div style="font-size:14px;margin-bottom:10px;">💎 仙玉：<span id="bagJade" style="color:#00e5ff;font-weight:bold;">0</span></div>
+						<div style="font-size:14px;margin-bottom:10px;">🍑 仙桃：<span id="bagPeaches" style="color:#ff9500;font-weight:bold;">0</span></div>
+						<div style="font-size:14px;margin-bottom:10px;">🌿 药材：<span id="bagHerbs" style="color:#30d158;font-weight:bold;">0</span></div>
+						<div style="font-size:14px;margin-bottom:10px;">🔑 钥匙：普通 <span id="bagKeyNormal" style="color:#fff;font-weight:bold;">0</span> · 黄金 <span id="bagKeyGold" style="color:#ffd700;font-weight:bold;">0</span> · 混沌 <span id="bagKeyChaos" style="color:#e040fb;font-weight:bold;">0</span></div>
 					</div>
 					<div class="card">
 						<div class="card-title">
 							📦 宝箱与特殊道具
-							<button
-								onclick="openAllChests()"
-								style="padding:4px 8px;background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.4);border-radius:6px;font-size:11px;"
-							>
-								一键开启
-							</button>
+							<button onclick="openAllChests()" style="padding:4px 8px;background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid rgba(255,215,0,0.4);border-radius:6px;font-size:11px;">一键开启</button>
 						</div>
-						<div
-							id="specialItemList"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="specialItemList" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 					<div class="card">
 						<div class="card-title">💊 仙丹列表</div>
-						<div
-							id="bagPillList"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="bagPillList" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 				</div>
 				<div class="page" id="page-home">
 					<div class="card" style="text-align:center;">
-						<div
-							style="font-size:24px;font-weight:900;color:#fff;"
-							id="profName"
-						>
-							名字
-						</div>
-						<div
-							style="font-size:12px;color:#aaa;margin-top:4px;"
-							id="profId"
-						>
-							ID
-						</div>
-						<div
-							style="font-size:12px;color:#ffd700;margin-top:4px;"
-							id="profReincarnate"
-						>
-							轮回 0 次
-						</div>
+						<div style="font-size:24px;font-weight:900;color:#fff;" id="profName">名字</div>
+						<div style="font-size:12px;color:#aaa;margin-top:4px;" id="profId">ID</div>
+						<div style="font-size:12px;color:#ffd700;margin-top:4px;" id="profReincarnate">轮回 0 次</div>
+						<div id="profConstitution" style="margin-top:6px;"></div>
 
-						<button
-							class="big-btn btn-blue"
-							id="btnBindGoogle"
-							style="margin-top:15px;"
-							onclick="bindGoogleAccount()"
-						>
-							🔗 绑定 Google 账号
-						</button>
-						<div
-							id="bindStatusText"
-							style="font-size:12px;color:#30d158;margin-top:5px;"
-						></div>
-						<button
-							class="big-btn btn-red"
-							id="btnLogout"
-							style="margin-top:10px; display:none;"
-							onclick="doLogout()"
-						>
-							🚪 登出当前账号
-						</button>
-
-						<button
-							class="big-btn btn-blue"
-							style="margin-top:10px; margin-bottom:0;"
-							onclick="openEncyclopedia()"
-						>
-							📖 查看全物品图鉴
-						</button>
+						<button class="big-btn btn-blue" id="btnBindGoogle" style="margin-top:15px;" onclick="bindGoogleAccount()">🔗 绑定 Google 账号</button>
+						<div id="bindStatusText" style="font-size:12px;color:#30d158;margin-top:5px;"></div>
+						<button class="big-btn btn-red" id="btnLogout" style="margin-top:10px; display:none;" onclick="doLogout()">🚪 登出当前账号</button>
+						<button class="big-btn btn-blue" style="margin-top:10px; margin-bottom:0;" onclick="openEncyclopedia()">📖 查看全物品图鉴</button>
 					</div>
 					<div class="card">
 						<div class="card-title">📋 今日目标</div>
-						<div
-							id="dailyGoalsBox"
-							style="font-size:13px;color:#ccc;line-height:1.8;"
-						></div>
+						<div id="dailyGoalsBox" style="font-size:13px;color:#ccc;line-height:1.8;"></div>
 					</div>
 					<div class="card">
 						<div class="card-title">🐴 坐骑</div>
@@ -1259,24 +786,14 @@
 					</div>
 					<div class="card">
 						<div class="card-title">📋 全部物品一览</div>
-						<div
-							id="allItemsOverview"
-							style="font-size:12px;color:#ccc;line-height:1.7;max-height:280px;overflow-y:auto;"
-						></div>
+						<div id="allItemsOverview" style="font-size:12px;color:#ccc;line-height:1.7;max-height:280px;overflow-y:auto;"></div>
 					</div>
 					<div class="card">
 						<div class="card-title">当前属性与状态</div>
 						<div style="font-size:13px;color:#ccc;line-height:1.8;">
-							当前境界：<span
-								id="profRealm"
-								style="color:#00c6ff;"
-							></span
-							><br />
-							装备评分：<span
-								id="profEquipPower"
-								style="color:#ffd700;"
-							></span
-							><br />
+							当前境界：<span id="profRealm" style="color:#00c6ff;"></span><br />
+							当前体质：<span id="profConstitutionText" style="color:#ff9500;"></span><br />
+							装备评分：<span id="profEquipPower" style="color:#ffd700;"></span><br />
 							仙树等级：Lv.<span id="profTree"></span><br />
 							灵兽状态：<span id="profPet"></span><br />
 							精怪状态：<span id="profSpirit"></span>
@@ -1285,32 +802,18 @@
 				</div>
 				<div class="page" id="page-rank">
 					<div class="card" style="padding-bottom:5px;">
-						<div
-							class="rank-tabs-wrap"
-							id="rankTabsWrap"
-							style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; -webkit-overflow-scrolling:touch;"
-						></div>
-						<div
-							class="rank-list"
-							id="rankList"
-							style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"
-						></div>
+						<div class="rank-tabs-wrap" id="rankTabsWrap" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px; -webkit-overflow-scrolling:touch;"></div>
+						<div class="rank-list" id="rankList" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
 					</div>
 				</div>
 				<div class="page" id="page-friend">
 					<div class="card">
 						<div class="card-title">🤝 我的好友</div>
-						<div
-							id="friendList"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="friendList" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 					<div class="card">
 						<div class="card-title">📩 好友申请</div>
-						<div
-							id="friendRequests"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="friendRequests" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 				</div>
 				<div class="page" id="page-mail">
@@ -1318,175 +821,57 @@
 						<div class="card-title">
 							<span>✉️ 我的邮件</span>
 							<div style="display:flex; gap:6px;">
-								<button
-									onclick="claimAllMails()"
-									style="padding:4px 8px; background:rgba(48,209,88,0.2); color:#30d158; border:1px solid rgba(48,209,88,0.4); border-radius:6px; font-size:11px; cursor:pointer;"
-								>
-									📦 一键领取
-								</button>
-								<button
-									onclick="deleteAllMails()"
-									style="padding:4px 8px; background:rgba(255,59,48,0.2); color:#ff453a; border:1px solid rgba(255,59,48,0.4); border-radius:6px; font-size:11px; cursor:pointer;"
-								>
-									🗑️ 一键删除
-								</button>
+								<button onclick="claimAllMails()" style="padding:4px 8px; background:rgba(48,209,88,0.2); color:#30d158; border:1px solid rgba(48,209,88,0.4); border-radius:6px; font-size:11px; cursor:pointer;">📦 一键领取</button>
+								<button onclick="deleteAllMails()" style="padding:4px 8px; background:rgba(255,59,48,0.2); color:#ff453a; border:1px solid rgba(255,59,48,0.4); border-radius:6px; font-size:11px; cursor:pointer;">🗑️ 一键删除</button>
 							</div>
 						</div>
-						<div
-							id="mailList"
-							style="display:flex; flex-direction:column; gap:8px;"
-						></div>
+						<div id="mailList" style="display:flex; flex-direction:column; gap:8px;"></div>
 					</div>
 				</div>
 			</div>
 			<div class="nav">
-				<button
-					class="nav-btn active"
-					data-page="chop"
-					onclick="switchPage('chop')"
-				>
-					<span class="icon">🪓</span>砍树
-				</button>
-				<button
-					class="nav-btn"
-					data-page="equip"
-					onclick="switchPage('equip')"
-				>
-					<span class="icon">⚔️</span>装备
-				</button>
-				<button
-					class="nav-btn"
-					data-page="map"
-					onclick="switchPage('map')"
-				>
-					<span class="icon">🗺️</span>秘境
-				</button>
-				<button
-					class="nav-btn"
-					data-page="cultivate"
-					onclick="switchPage('cultivate')"
-				>
-					<span class="icon">🧘</span>养成
-				</button>
-				<button
-					class="nav-btn"
-					data-page="alchemy"
-					onclick="switchPage('alchemy')"
-				>
-					<span class="icon">🔮</span>炼丹
-				</button>
-				<button
-					class="nav-btn"
-					data-page="world"
-					onclick="switchPage('world')"
-				>
-					<span class="icon">🌌</span>世界
-				</button>
-				<button
-					class="nav-btn"
-					data-page="bag"
-					onclick="switchPage('bag')"
-				>
-					<span class="icon">🎒</span>背包
-				</button>
-				<button
-					class="nav-btn"
-					data-page="shop"
-					onclick="switchPage('shop')"
-				>
-					<span class="icon">🛒</span>商城
-				</button>
-				<button
-					class="nav-btn"
-					data-page="sect"
-					onclick="switchPage('sect')"
-				>
-					<span class="icon">🏯</span>宗门
-				</button>
-				<button
-					class="nav-btn"
-					data-page="rank"
-					onclick="switchPage('rank')"
-				>
-					<span class="icon">🏆</span>排行
-				</button>
-				<button
-					class="nav-btn"
-					data-page="mail"
-					onclick="switchPage('mail')"
-				>
-					<span class="icon">✉️</span>邮件
-				</button>
-				<button
-					class="nav-btn"
-					data-page="home"
-					onclick="switchPage('home')"
-				>
-					<span class="icon">👤</span>我的
-				</button>
+				<button class="nav-btn active" data-page="chop" onclick="switchPage('chop')"><span class="icon">🪓</span>砍树</button>
+				<button class="nav-btn" data-page="equip" onclick="switchPage('equip')"><span class="icon">⚔️</span>装备</button>
+				<button class="nav-btn" data-page="map" onclick="switchPage('map')"><span class="icon">🗺️</span>秘境</button>
+				<button class="nav-btn" data-page="cultivate" onclick="switchPage('cultivate')"><span class="icon">🧘</span>养成</button>
+				<button class="nav-btn" data-page="alchemy" onclick="switchPage('alchemy')"><span class="icon">🔮</span>炼丹</button>
+				<button class="nav-btn" data-page="world" onclick="switchPage('world')"><span class="icon">🌌</span>世界</button>
+				<button class="nav-btn" data-page="bag" onclick="switchPage('bag')"><span class="icon">🎒</span>背包</button>
+				<button class="nav-btn" data-page="shop" onclick="switchPage('shop')"><span class="icon">🛒</span>商城</button>
+				<button class="nav-btn" data-page="sect" onclick="switchPage('sect')"><span class="icon">🏯</span>宗门</button>
+				<button class="nav-btn" data-page="rank" onclick="switchPage('rank')"><span class="icon">🏆</span>排行</button>
+				<button class="nav-btn" data-page="mail" onclick="switchPage('mail')"><span class="icon">✉️</span>邮件</button>
+				<button class="nav-btn" data-page="home" onclick="switchPage('home')"><span class="icon">👤</span>我的</button>
 			</div>
 		</div>
 		<div class="modal-overlay" id="encyclopediaModal">
 			<div class="modal-box">
 				<div class="modal-title">📖 全物品图鉴</div>
-				<div
-					class="rank-tab"
-					style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;"
-				>
-					<button
-						class="active"
-						onclick="switchEncyTab('realm', this)"
-					>
-						境界
-					</button>
+				<div class="rank-tab" style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;">
+					<button class="active" onclick="switchEncyTab('realm', this)">境界</button>
+					<button onclick="switchEncyTab('constitution', this)">体质</button>
+					<button onclick="switchEncyTab('numbers', this)">数阶</button>
 					<button onclick="switchEncyTab('pet', this)">灵兽</button>
-					<button onclick="switchEncyTab('spirit', this)">
-						精怪
-					</button>
+					<button onclick="switchEncyTab('spirit', this)">精怪</button>
 					<button onclick="switchEncyTab('mount', this)">坐骑</button>
 					<button onclick="switchEncyTab('pill', this)">丹药</button>
-					<button onclick="switchEncyTab('equip', this)">
-						装备部位
-					</button>
-					<button onclick="switchEncyTab('chest', this)">
-						宝箱道具
-					</button>
+					<button onclick="switchEncyTab('equip', this)">装备部位</button>
+					<button onclick="switchEncyTab('chest', this)">宝箱道具</button>
 					<button onclick="switchEncyTab('world', this)">世界</button>
-					<button onclick="switchEncyTab('quality', this)">
-						品质
-					</button>
+					<button onclick="switchEncyTab('quality', this)">品质</button>
 				</div>
-				<div
-					class="modal-content"
-					id="encyclopediaContent"
-					style="display:flex; flex-direction:column; gap:8px;"
-				></div>
-				<button
-					class="modal-close"
-					onclick="document.getElementById('encyclopediaModal').style.display='none'"
-				>
-					关闭
-				</button>
+				<div class="modal-content" id="encyclopediaContent" style="display:flex; flex-direction:column; gap:8px;"></div>
+				<button class="modal-close" onclick="document.getElementById('encyclopediaModal').style.display='none'">关闭</button>
 			</div>
 		</div>
 		<div class="modal-overlay" id="actionModal">
 			<div class="modal-box">
 				<div class="modal-title" id="actionModalTitle">操作</div>
-				<div
-					class="modal-content"
-					id="actionModalContent"
-					style="display:flex; flex-direction:column; gap:8px;"
-				></div>
-				<button
-					class="modal-close"
-					onclick="document.getElementById('actionModal').style.display='none'"
-				>
-					取消
-				</button>
+				<div class="modal-content" id="actionModalContent" style="display:flex; flex-direction:column; gap:8px;"></div>
+				<button class="modal-close" onclick="document.getElementById('actionModal').style.display='none'">取消</button>
 			</div>
 		</div>
 		<div id="toastBox"></div>
-
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -1531,7 +916,8 @@
 			  active: false, enemyId: null, enemyName: '', enemyOffline: false,
 			  myHp: 0, myMaxHp: 0, enemyHp: 0, enemyMaxHp: 0, myAtk: 0, enemyAtk: 0,
 			  myCritRate: 0, myCritDmg: 1.5, enemyCritRate: 0, enemyCritDmg: 1.5,
-			  myCd: {}, enemyCd: {}, skillFlash: 0, ended: false
+			  myCd: {}, enemyCd: {}, skillFlash: 0, ended: false,
+			  myFrame: 0, enemyFrame: 0, myAction: 'idle', enemyAction: 'idle'
 			};
 
 			const RANK_TABS = [
@@ -1541,6 +927,250 @@
 			    { id: 'equip', name: '装备榜' }, { id: 'power', name: '战力榜' }
 			];
 			let currentRankTab = 'realm';
+
+			// ====== 觉醒石定义（6 级）======
+			const AWAKEN_STONES = {
+			  normal: { id: 'stone_normal', name: '普通觉醒石', icon: '🪨', price: 100000,  minIdx: 0,   maxIdx: 19,  rate: 0.005  },
+			  spirit: { id: 'stone_spirit', name: '灵品觉醒石', icon: '🪨', price: 200000,  minIdx: 20,  maxIdx: 39,  rate: 0.003  },
+			  xian:   { id: 'stone_xian',   name: '仙品觉醒石', icon: '🪨', price: 400000,  minIdx: 40,  maxIdx: 59,  rate: 0.0015 },
+			  shen:   { id: 'stone_shen',   name: '神品觉醒石', icon: '🪨', price: 800000,  minIdx: 60,  maxIdx: 79,  rate: 0.0008 },
+			  dao:    { id: 'stone_dao',    name: '道品觉醒石', icon: '🪨', price: 1600000, minIdx: 80,  maxIdx: 99,  rate: 0.0003 },
+			  shenzhou:{ id: 'stone_shenzhou', name: '神州石',  icon: '🌟', price: null,    minIdx: 100, maxIdx: 110, rate: 0.0001 }
+			};
+			const AWAKEN_STONE_ORDER = ['normal', 'spirit', 'xian', 'shen', 'dao', 'shenzhou'];
+
+			// ====== 111 种体质（从最弱到最强）======
+			const CONSTITUTIONS = [
+			  { name: '凡体',          rank: 0,   atkMult: 1.00, hpMult: 1.00, color: '#9e9e9e' },
+			  { name: '朽木体',        rank: 1,   atkMult: 1.05, hpMult: 1.08, color: '#8d6e63' },
+			  { name: '顽石体',        rank: 2,   atkMult: 1.10, hpMult: 1.18, color: '#757575' },
+			  { name: '青叶体',        rank: 3,   atkMult: 1.16, hpMult: 1.26, color: '#4caf50' },
+			  { name: '疾风体',        rank: 4,   atkMult: 1.24, hpMult: 1.34, color: '#80deea' },
+			  { name: '玄水体',        rank: 5,   atkMult: 1.32, hpMult: 1.46, color: '#2196f3' },
+			  { name: '烈火体',        rank: 6,   atkMult: 1.42, hpMult: 1.58, color: '#ff5722' },
+			  { name: '厚土体',        rank: 7,   atkMult: 1.52, hpMult: 1.74, color: '#a1887f' },
+			  { name: '庚金体',        rank: 8,   atkMult: 1.64, hpMult: 1.90, color: '#cfd8dc' },
+			  { name: '乙木体',        rank: 9,   atkMult: 1.76, hpMult: 2.08, color: '#66bb6a' },
+			  { name: '寒冰体',        rank: 10,  atkMult: 1.90, hpMult: 2.28, color: '#4dd0e1' },
+			  { name: '雷霆体',        rank: 11,  atkMult: 2.05, hpMult: 2.50, color: '#ffee58' },
+			  { name: '阴煞体',        rank: 12,  atkMult: 2.22, hpMult: 2.74, color: '#7e57c2' },
+			  { name: '阳刚体',        rank: 13,  atkMult: 2.40, hpMult: 3.00, color: '#ffa726' },
+			  { name: '血煞体',        rank: 14,  atkMult: 2.60, hpMult: 3.28, color: '#b71c1c' },
+			  { name: '剑心体',        rank: 15,  atkMult: 2.82, hpMult: 3.58, color: '#e0e0e0' },
+			  { name: '刀魄体',        rank: 16,  atkMult: 3.06, hpMult: 3.90, color: '#ff8a65' },
+			  { name: '枪魂体',        rank: 17,  atkMult: 3.32, hpMult: 4.24, color: '#90a4ae' },
+			  { name: '弓灵体',        rank: 18,  atkMult: 3.60, hpMult: 4.60, color: '#aed581' },
+			  { name: '符道体',        rank: 19,  atkMult: 3.90, hpMult: 5.00, color: '#ffd54f' },
+			  { name: '阵道体',        rank: 20,  atkMult: 4.22, hpMult: 5.42, color: '#4db6ac' },
+			  { name: '丹道体',        rank: 21,  atkMult: 4.58, hpMult: 5.88, color: '#f06292' },
+			  { name: '器道体',        rank: 22,  atkMult: 4.96, hpMult: 6.38, color: '#ba68c8' },
+			  { name: '兽魂体',        rank: 23,  atkMult: 5.38, hpMult: 6.92, color: '#8d6e63' },
+			  { name: '妖灵体',        rank: 24,  atkMult: 5.82, hpMult: 7.50, color: '#ab47bc' },
+			  { name: '魔骨体',        rank: 25,  atkMult: 6.30, hpMult: 8.12, color: '#6a1b9a' },
+			  { name: '仙肌体',        rank: 26,  atkMult: 6.82, hpMult: 8.80, color: '#4fc3f7' },
+			  { name: '神灵体',        rank: 27,  atkMult: 7.38, hpMult: 9.52, color: '#ffb300' },
+			  { name: '圣胎体',        rank: 28,  atkMult: 7.98, hpMult: 10.30, color: '#fff176' },
+			  { name: '龙裔体',        rank: 29,  atkMult: 8.62, hpMult: 11.14, color: '#43a047' },
+			  { name: '凤血体',        rank: 30,  atkMult: 9.30, hpMult: 12.04, color: '#e53935' },
+			  { name: '玄武体',        rank: 31,  atkMult: 10.02, hpMult: 13.00, color: '#1e88e5' },
+			  { name: '白虎体',        rank: 32,  atkMult: 10.80, hpMult: 14.04, color: '#eceff1' },
+			  { name: '麒麟体',        rank: 33,  atkMult: 11.62, hpMult: 15.16, color: '#ffca28' },
+			  { name: '鲲鹏体',        rank: 34,  atkMult: 12.50, hpMult: 16.36, color: '#26c6da' },
+			  { name: '混沌体',        rank: 35,  atkMult: 13.44, hpMult: 17.66, color: '#78909c' },
+			  { name: '鸿蒙体',        rank: 36,  atkMult: 14.44, hpMult: 19.06, color: '#7e57c2' },
+			  { name: '造化体',        rank: 37,  atkMult: 15.50, hpMult: 20.56, color: '#26a69a' },
+			  { name: '太极体',        rank: 38,  atkMult: 16.64, hpMult: 22.18, color: '#eceff1' },
+			  { name: '无极体',        rank: 39,  atkMult: 17.86, hpMult: 23.94, color: '#b0bec5' },
+			  { name: '太初体',        rank: 40,  atkMult: 19.16, hpMult: 25.84, color: '#ffd180' },
+			  { name: '太素体',        rank: 41,  atkMult: 20.56, hpMult: 27.90, color: '#ffe082' },
+			  { name: '星辰体',        rank: 42,  atkMult: 22.06, hpMult: 30.12, color: '#7986cb' },
+			  { name: '紫微体',        rank: 43,  atkMult: 23.68, hpMult: 32.52, color: '#9575cd' },
+			  { name: '轮回体',        rank: 44,  atkMult: 25.42, hpMult: 35.10, color: '#4db6ac' },
+			  { name: '涅槃体',        rank: 45,  atkMult: 27.28, hpMult: 37.90, color: '#ff7043' },
+			  { name: '极阳道体',      rank: 46,  atkMult: 29.28, hpMult: 40.92, color: '#ffb300' },
+			  { name: '极阴道体',      rank: 47,  atkMult: 31.42, hpMult: 44.18, color: '#7c4dff' },
+			  { name: '混沌道体',      rank: 48,  atkMult: 33.72, hpMult: 47.70, color: '#78909c' },
+			  { name: '太易体',        rank: 49,  atkMult: 36.18, hpMult: 51.50, color: '#80cbc4' },
+			  { name: '两仪体',        rank: 50,  atkMult: 38.82, hpMult: 55.62, color: '#c5e1a5' },
+			  { name: '四象体',        rank: 51,  atkMult: 41.65, hpMult: 60.07, color: '#ffab91' },
+			  { name: '八卦体',        rank: 52,  atkMult: 44.68, hpMult: 64.88, color: '#b39ddb' },
+			  { name: '周天体',        rank: 53,  atkMult: 47.93, hpMult: 70.07, color: '#81d4fa' },
+			  { name: '乾坤体',        rank: 54,  atkMult: 51.41, hpMult: 75.67, color: '#ffe082' },
+			  { name: '阴阳体',        rank: 55,  atkMult: 55.14, hpMult: 81.72, color: '#f48fb1' },
+			  { name: '五行体',        rank: 56,  atkMult: 59.14, hpMult: 88.26, color: '#a5d6a7' },
+			  { name: '六合体',        rank: 57,  atkMult: 63.42, hpMult: 95.32, color: '#90caf9' },
+			  { name: '八荒体',        rank: 58,  atkMult: 68.01, hpMult: 102.95, color: '#fff59d' },
+			  { name: '十方体',        rank: 59,  atkMult: 72.93, hpMult: 111.19, color: '#ce93d8' },
+			  { name: '三千体',        rank: 60,  atkMult: 78.21, hpMult: 120.08, color: '#80cbc4' },
+			  { name: '大千体',        rank: 61,  atkMult: 83.87, hpMult: 129.69, color: '#ffcc80' },
+			  { name: '无极真体',      rank: 62,  atkMult: 89.94, hpMult: 140.06, color: '#e6ee9c' },
+			  { name: '无极大体',      rank: 63,  atkMult: 96.44, hpMult: 151.27, color: '#9fa8da' },
+			  { name: '无极圣体',      rank: 64,  atkMult: 103.41, hpMult: 163.37, color: '#b2dfdb' },
+			  { name: '无极帝体',      rank: 65,  atkMult: 110.88, hpMult: 176.44, color: '#ffd700' },
+			  { name: '道源体',        rank: 66,  atkMult: 118.88, hpMult: 190.55, color: '#4fc3f7' },
+			  { name: '道祖体',        rank: 67,  atkMult: 127.45, hpMult: 205.80, color: '#f06292' },
+			  { name: '道尊体',        rank: 68,  atkMult: 136.65, hpMult: 222.26, color: '#ba68c8' },
+			  { name: '道帝体',        rank: 69,  atkMult: 146.51, hpMult: 240.04, color: '#ffb74d' },
+			  { name: '天道体',        rank: 70,  atkMult: 157.08, hpMult: 259.24, color: '#4dd0e1' },
+			  { name: '天尊体',        rank: 71,  atkMult: 168.41, hpMult: 279.98, color: '#aed581' },
+			  { name: '天帝体',        rank: 72,  atkMult: 180.56, hpMult: 302.38, color: '#ffd54f' },
+			  { name: '天祖体',        rank: 73,  atkMult: 193.59, hpMult: 326.57, color: '#ff8a65' },
+			  { name: '仙源体',        rank: 74,  atkMult: 207.56, hpMult: 352.69, color: '#81c784' },
+			  { name: '仙祖体',        rank: 75,  atkMult: 222.54, hpMult: 380.91, color: '#7986cb' },
+			  { name: '仙帝体',        rank: 76,  atkMult: 238.60, hpMult: 411.38, color: '#e57373' },
+			  { name: '神源体',        rank: 77,  atkMult: 255.81, hpMult: 444.29, color: '#4db6ac' },
+			  { name: '神祖体',        rank: 78,  atkMult: 274.27, hpMult: 479.83, color: '#fff176' },
+			  { name: '神帝体',        rank: 79,  atkMult: 294.05, hpMult: 518.22, color: '#ffb74d' },
+			  { name: '圣源体',        rank: 80,  atkMult: 315.26, hpMult: 559.67, color: '#b39ddb' },
+			  { name: '圣祖体',        rank: 81,  atkMult: 338.01, hpMult: 604.45, color: '#80deea' },
+			  { name: '圣帝体',        rank: 82,  atkMult: 362.40, hpMult: 652.80, color: '#fff59d' },
+			  { name: '皇极体',        rank: 83,  atkMult: 388.55, hpMult: 705.03, color: '#ce93d8' },
+			  { name: '帝极体',        rank: 84,  atkMult: 416.59, hpMult: 761.43, color: '#a5d6a7' },
+			  { name: '尊极体',        rank: 85,  atkMult: 446.64, hpMult: 822.34, color: '#90caf9' },
+			  { name: '主极体',        rank: 86,  atkMult: 478.85, hpMult: 888.13, color: '#ffab91' },
+			  { name: '主宰体',        rank: 87,  atkMult: 513.36, hpMult: 959.18, color: '#f48fb1' },
+			  { name: '至尊体',        rank: 88,  atkMult: 550.33, hpMult: 1035.92, color: '#ffe082' },
+			  { name: '至高体',        rank: 89,  atkMult: 589.94, hpMult: 1118.79, color: '#c5e1a5' },
+			  { name: '至上体',        rank: 90,  atkMult: 632.36, hpMult: 1208.30, color: '#81d4fa' },
+			  { name: '超凡体',        rank: 91,  atkMult: 677.82, hpMult: 1304.96, color: '#b39ddb' },
+			  { name: '入圣体',        rank: 92,  atkMult: 726.53, hpMult: 1409.36, color: '#ffd700' },
+			  { name: '化神体',        rank: 93,  atkMult: 778.74, hpMult: 1522.11, color: '#4fc3f7' },
+			  { name: '合道体',        rank: 94,  atkMult: 834.70, hpMult: 1643.88, color: '#aed581' },
+			  { name: '证道体',        rank: 95,  atkMult: 894.70, hpMult: 1775.39, color: '#ff8a65' },
+			  { name: '问道体',        rank: 96,  atkMult: 959.02, hpMult: 1917.42, color: '#e57373' },
+			  { name: '悟道体',        rank: 97,  atkMult: 1028.00, hpMult: 2070.82, color: '#7986cb' },
+			  { name: '得道体',        rank: 98,  atkMult: 1101.97, hpMult: 2236.49, color: '#4db6ac' },
+			  { name: '成道体',        rank: 99,  atkMult: 1181.30, hpMult: 2415.41, color: '#fff176' },
+			  { name: '飞升体',        rank: 100, atkMult: 1266.40, hpMult: 2608.64, color: '#ffb74d' },
+			  { name: '飞仙体',        rank: 101, atkMult: 1357.68, hpMult: 2817.33, color: '#b39ddb' },
+			  { name: '真仙体',        rank: 102, atkMult: 1455.61, hpMult: 3042.72, color: '#80deea' },
+			  { name: '金仙体',        rank: 103, atkMult: 1560.66, hpMult: 3286.14, color: '#fff59d' },
+			  { name: '太乙体',        rank: 104, atkMult: 1673.36, hpMult: 3549.03, color: '#ce93d8' },
+			  { name: '大罗体',        rank: 105, atkMult: 1794.25, hpMult: 3832.95, color: '#a5d6a7' },
+			  { name: '混元大罗体',    rank: 106, atkMult: 1923.90, hpMult: 4139.59, color: '#90caf9' },
+			  { name: '永恒混元体',    rank: 107, atkMult: 2062.94, hpMult: 4470.76, color: '#ffab91' },
+			  { name: '终极体',        rank: 108, atkMult: 2212.03, hpMult: 4828.42, color: '#f48fb1' },
+			  { name: '神话体',        rank: 109, atkMult: 2371.87, hpMult: 5214.69, color: '#ffe082' },
+			  { name: '道尽天源体',    rank: 110, atkMult: 2543.24, hpMult: 5631.87, color: '#ffd700' }
+			];
+
+			// ====== 大数阶位表（用于图鉴）======
+			const NUMBER_TIERS = [
+			  { idx: 0,  name: '个',       exp: 0,    label: '1' },
+			  { idx: 1,  name: '十',       exp: 1,    label: '10' },
+			  { idx: 2,  name: '百',       exp: 2,    label: '100' },
+			  { idx: 3,  name: '千',       exp: 3,    label: '1,000' },
+			  { idx: 4,  name: '万',       exp: 4,    label: '10,000' },
+			  { idx: 5,  name: '十万',     exp: 5,    label: '100,000' },
+			  { idx: 6,  name: '百万',     exp: 6,    label: '1,000,000' },
+			  { idx: 7,  name: '千万',     exp: 7,    label: '10,000,000' },
+			  { idx: 8,  name: '亿',       exp: 8,    label: '100,000,000' },
+			  { idx: 9,  name: '十亿',     exp: 9,    label: '1e9' },
+			  { idx: 10, name: '百亿',     exp: 10,   label: '1e10' },
+			  { idx: 11, name: '千亿',     exp: 11,   label: '1e11' },
+			  { idx: 12, name: '兆',       exp: 12,   label: '1e12' },
+			  { idx: 13, name: '十兆',     exp: 13,   label: '1e13' },
+			  { idx: 14, name: '百兆',     exp: 14,   label: '1e14' },
+			  { idx: 15, name: '千兆',     exp: 15,   label: '1e15' },
+			  { idx: 16, name: '京',       exp: 16,   label: '1e16' },
+			  { idx: 17, name: '十京',     exp: 17,   label: '1e17' },
+			  { idx: 18, name: '百京',     exp: 18,   label: '1e18' },
+			  { idx: 19, name: '千京',     exp: 19,   label: '1e19' },
+			  { idx: 20, name: '垓',       exp: 20,   label: '1e20' },
+			  { idx: 21, name: '十垓',     exp: 21,   label: '1e21' },
+			  { idx: 22, name: '百垓',     exp: 22,   label: '1e22' },
+			  { idx: 23, name: '千垓',     exp: 23,   label: '1e23' },
+			  { idx: 24, name: '秭',       exp: 24,   label: '1e24' },
+			  { idx: 25, name: '穰',       exp: 28,   label: '1e28' },
+			  { idx: 26, name: '沟',       exp: 32,   label: '1e32' },
+			  { idx: 27, name: '涧',       exp: 36,   label: '1e36' },
+			  { idx: 28, name: '正',       exp: 40,   label: '1e40' },
+			  { idx: 29, name: '载',       exp: 44,   label: '1e44' },
+			  { idx: 30, name: '极',       exp: 48,   label: '1e48' },
+			  { idx: 31, name: '恒河沙',   exp: 52,   label: '1e52' },
+			  { idx: 32, name: '阿僧祇',   exp: 56,   label: '1e56' },
+			  { idx: 33, name: '那由他',   exp: 60,   label: '1e60' },
+			  { idx: 34, name: '不可思议', exp: 64,   label: '1e64' },
+			  { idx: 35, name: '无量',     exp: 68,   label: '1e68' },
+			  { idx: 36, name: '大数',     exp: 72,   label: '1e72' },
+			  { idx: 37, name: '太初',     exp: 76,   label: '1e76' },
+			  { idx: 38, name: '太始',     exp: 80,   label: '1e80' },
+			  { idx: 39, name: '太素',     exp: 84,   label: '1e84' },
+			  { idx: 40, name: '太极',     exp: 88,   label: '1e88' },
+			  { idx: 41, name: '无极',     exp: 92,   label: '1e92' },
+			  { idx: 42, name: '太虚',     exp: 96,   label: '1e96' },
+			  { idx: 43, name: '混沌',     exp: 100,  label: '1e100' },
+			  { idx: 44, name: '鸿蒙',     exp: 104,  label: '1e104' },
+			  { idx: 45, name: '造化',     exp: 108,  label: '1e108' },
+			  { idx: 46, name: '本源',     exp: 112,  label: '1e112' },
+			  { idx: 47, name: '起源',     exp: 116,  label: '1e116' },
+			  { idx: 48, name: '终焉',     exp: 120,  label: '1e120' },
+			  { idx: 49, name: '轮回',     exp: 124,  label: '1e124' },
+			  { idx: 50, name: '涅槃',     exp: 128,  label: '1e128' },
+			  { idx: 51, name: '法则',     exp: 132,  label: '1e132' },
+			  { idx: 52, name: '大道',     exp: 136,  label: '1e136' },
+			  { idx: 53, name: '天道',     exp: 140,  label: '1e140' },
+			  { idx: 54, name: '万劫',     exp: 144,  label: '1e144' },
+			  { idx: 55, name: '万古',     exp: 148,  label: '1e148' },
+			  { idx: 56, name: '不灭',     exp: 152,  label: '1e152' },
+			  { idx: 57, name: '不朽',     exp: 156,  label: '1e156' },
+			  { idx: 58, name: '永恒',     exp: 160,  label: '1e160' },
+			  { idx: 59, name: '创世',     exp: 164,  label: '1e164' },
+			  { idx: 60, name: '灭世',     exp: 168,  label: '1e168' },
+			  { idx: 61, name: '星辰',     exp: 172,  label: '1e172' },
+			  { idx: 62, name: '诸天',     exp: 176,  label: '1e176' },
+			  { idx: 63, name: '万界',     exp: 180,  label: '1e180' },
+			  { idx: 64, name: '虚空',     exp: 184,  label: '1e184' },
+			  { idx: 65, name: '虚无',     exp: 188,  label: '1e188' },
+			  { idx: 66, name: '真实',     exp: 192,  label: '1e192' },
+			  { idx: 67, name: '因果',     exp: 196,  label: '1e196' },
+			  { idx: 68, name: '命运',     exp: 200,  label: '1e200' },
+			  { idx: 69, name: '时空',     exp: 204,  label: '1e204' },
+			  { idx: 70, name: '至高',     exp: 208,  label: '1e208' },
+			  { idx: 71, name: '至上',     exp: 212,  label: '1e212' },
+			  { idx: 72, name: '主宰',     exp: 216,  label: '1e216' },
+			  { idx: 73, name: '至尊',     exp: 220,  label: '1e220' },
+			  { idx: 74, name: '道源',     exp: 224,  label: '1e224' },
+			  { idx: 75, name: '道祖',     exp: 228,  label: '1e228' },
+			  { idx: 76, name: '道尊',     exp: 232,  label: '1e232' },
+			  { idx: 77, name: '道帝',     exp: 236,  label: '1e236' },
+			  { idx: 78, name: '天尊',     exp: 240,  label: '1e240' },
+			  { idx: 79, name: '天帝',     exp: 244,  label: '1e244' },
+			  { idx: 80, name: '仙帝',     exp: 248,  label: '1e248' },
+			  { idx: 81, name: '神帝',     exp: 252,  label: '1e252' },
+			  { idx: 82, name: '圣帝',     exp: 256,  label: '1e256' },
+			  { idx: 83, name: '皇极',     exp: 260,  label: '1e260' },
+			  { idx: 84, name: '帝极',     exp: 264,  label: '1e264' },
+			  { idx: 85, name: '尊极',     exp: 268,  label: '1e268' },
+			  { idx: 86, name: '主极',     exp: 272,  label: '1e272' },
+			  { idx: 87, name: '无极境',   exp: 276,  label: '1e276' },
+			  { idx: 88, name: '太上',     exp: 280,  label: '1e280' },
+			  { idx: 89, name: '混元',     exp: 284,  label: '1e284' },
+			  { idx: 90, name: '大罗',     exp: 288,  label: '1e288' },
+			  { idx: 91, name: '永恒真境', exp: 292,  label: '1e292' },
+			  { idx: 92, name: '终极',     exp: 296,  label: '1e296' },
+			  { idx: 93, name: '神话',     exp: 300,  label: '1e300' },
+			  { idx: 94, name: '传说',     exp: 304,  label: '1e304' },
+			  { idx: 95, name: '无尽',     exp: 308,  label: '1e308' }
+			];
+
+			function getConstitution() {
+			  if (!state) return CONSTITUTIONS[0];
+			  const idx = Math.max(0, Math.min(CONSTITUTIONS.length - 1, Number(state.constitution) || 0));
+			  return CONSTITUTIONS[idx];
+			}
+			function getStoneKeyForIndex(idx) {
+			  if (idx <= 19) return 'normal';
+			  if (idx <= 39) return 'spirit';
+			  if (idx <= 59) return 'xian';
+			  if (idx <= 79) return 'shen';
+			  if (idx <= 99) return 'dao';
+			  return 'shenzhou';
+			}
+			function getStoneCount(key) {
+			  if (!state || !state.awakenStones) return 0;
+			  return Number(state.awakenStones[key]) || 0;
+			}
 
 			function parseBigNum(str, fallback) {
 			  if (str === null || str === undefined || str === '') return fallback;
@@ -1744,6 +1374,7 @@
 			  if (!state.specialItems) state.specialItems = {};
 			  if (!state.keys) state.keys = { normal: 0, gold: 0, chaos: 0 };
 			  if (!state.buffs) state.buffs = {};
+			  if (!state.awakenStones) state.awakenStones = { normal: 0, spirit: 0, xian: 0, shen: 0, dao: 0, shenzhou: 0 };
 			}
 			function addSpecialItem(id, count) {
 			  ensureSpecialItems(); count = count || 1;
@@ -1769,6 +1400,46 @@
 			  if (state.specialItems[id] <= 0) delete state.specialItems[id];
 			  return true;
 			}
+
+			window.buyAwakenStone = async function(key) {
+			  const s = AWAKEN_STONES[key]; if (!s) return toast('未知觉醒石');
+			  if (s.price === null) return toast('神州石为作者专属发放，商城不出售');
+			  if (safeNum(state.jade, 0) < s.price) return toast('💎 仙玉不足');
+			  state.jade = safeAdd(state.jade, -s.price);
+			  ensureSpecialItems();
+			  state.awakenStones[key] = safeAdd(state.awakenStones[key] || 0, 1);
+			  toast(`购买成功：${s.name} ×1`);
+			  renderAll(); await saveState();
+			};
+
+			window.doConstitutionAwaken = async function() {
+			  if (!state) return;
+			  if (state.constitutionAwakenedThisLife) return toast('本轮已觉醒过体质，需轮回后才能再次觉醒');
+			  const cur = Number(state.constitution) || 0;
+			  if (cur >= CONSTITUTIONS.length - 1) return toast('已觉醒最强体质');
+			  const nextIdx = cur + 1;
+			  const stoneKey = getStoneKeyForIndex(nextIdx);
+			  const stone = AWAKEN_STONES[stoneKey];
+			  if (getStoneCount(stoneKey) <= 0) return toast(`缺少「${stone.name}」（可觉醒区间 ${stone.minIdx + 1}~${stone.maxIdx + 1}）`);
+			  const info = getRealmDisplayInfo();
+			  const expCost = safeMul(realmTrainCost(info.maxRealmIdx, info.level), 5);
+			  if (safeNum(state.exp, 0) < expCost) return toast(`觉醒需消耗 ${fmt(expCost)} 经验，经验不足`);
+			  if (!confirm(`消耗 ${stone.name} ×1 与 ${fmt(expCost)} 经验，尝试觉醒下一阶体质。\n成功率 ${(stone.rate * 100).toFixed(3)}%。\n确定吗？`)) return;
+			  state.exp = safeAdd(state.exp, -expCost);
+			  ensureSpecialItems();
+			  state.awakenStones[stoneKey] = safeAdd(state.awakenStones[stoneKey], -1);
+			  if (Math.random() < stone.rate) {
+			    state.constitution = nextIdx;
+			    state.constitutionAwakenedThisLife = true;
+			    if (!state.awakenedHistory) state.awakenedHistory = [];
+			    if (!state.awakenedHistory.includes(nextIdx)) state.awakenedHistory.push(nextIdx);
+			    const con = CONSTITUTIONS[nextIdx];
+			    toast(`✨ 觉醒成功！获得【${con.name}】体质！本轮觉醒已用尽，轮回后可再觉醒。`);
+			  } else {
+			    toast('💥 觉醒失败，觉醒石与经验已消耗。');
+			  }
+			  renderAll(); await saveState();
+			};
 
 			function openChestLoot(chestId, usedKey) {
 			  const def = SPECIAL_ITEM_DEFS[chestId]; if (!def) return [];
@@ -1919,7 +1590,7 @@
 			}
 			function genPlayerId() { return 'GAME-' + Math.random().toString(36).substr(2, 9).toUpperCase(); }
 			function freshState(name) {
-			  return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, herbItems: [], demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0, specialItems: {}, keys: { normal: 0, gold: 0, chaos: 0 }, buffs: {}, mounts: { owned: [], equipped: null, exp: {} }, camp: 'xian', lifeDeathUsed: 0 };
+			  return { name: name, deviceId: localStorage.getItem('chat_device_id') || '', createdAt: Date.now(), lastActive: Date.now(), realm: 0, realmLevel: 1, charLevel: 1, exp: 0, treeLevel: 1, treeUpgradeEnd: 0, atk: 10, hp: 100, critRate: 0.05, critDmg: 1.5, luck: 0, jade: 0, peaches: 20, demonTickets: 10, towerTickets: 10, equipment: { weapon:null, helmet:null, armor:null, boots:null, ring:null, necklace:null, belt:null, artifact:null }, pets: { owned: [], equipped: null }, spirits: { owned: [], equipped: null }, spells: {}, inventory: [], pills: [], herbs: 0, herbItems: [], demonKingLevel: 0, towerLevel: 0, totalChops: 0, totalDrops: 0, boughtGifts: [], friends: [], friendRequests: [], mail: [], sect: null, sectPoints: 0, reincarnateCount: 0, talentPoints: 0, extraDropLevel: 0, dragonTickets: 10, phoenixTickets: 10, turtleTickets: 10, tigerTickets: 10, voidTickets: 10, starTickets: 10, timeTickets: 10, spaceTickets: 10, chaosTickets: 10, originTickets: 10, endTickets: 10, heavenTickets: 10, hellTickets: 10, immortalTickets: 10, demonrealmTickets: 10, pillBuffs: {}, currentWorldIdx: 0, specialItems: {}, keys: { normal: 0, gold: 0, chaos: 0 }, buffs: {}, mounts: { owned: [], equipped: null, exp: {} }, camp: 'xian', lifeDeathUsed: 0, constitution: 0, constitutionAwakenedThisLife: false, awakenedHistory: [], awakenStones: { normal: 0, spirit: 0, xian: 0, shen: 0, dao: 0, shenzhou: 0 } };
 			}
 			function realmTrainCost(realm, realmLevel) {
 			  let cost = Math.pow(10, safeNum(realm, 0) + 3) * safeNum(realmLevel, 1);
@@ -2025,6 +1696,12 @@
 			    }
 			  }
 			  atk = safeMul(atk, reincMult); hp = safeMul(hp, reincMult); equipPower = safeMul(equipPower, reincMult); petPower = safeMul(petPower, reincMult);
+
+			  // ===== 体质乘算 =====
+			  const con = getConstitution();
+			  atk = safeMul(atk, con.atkMult);
+			  hp = safeMul(hp, con.hpMult);
+
 			  const totalPower = safeAdd(atk, safeMul(hp, 0.5));
 			  return { atk: Math.round(safeClampInf(atk)), hp: Math.round(safeClampInf(hp)), critRate: Math.min(safeNum(critRate, 0), 1), critDmg: Math.max(1, safeClampInf(critDmg)), luck: Math.round(safeClampInf(luck)), totalPower: Math.round(safeClampInf(totalPower)), equipPower: Math.round(equipPower), petPower: Math.round(petPower) };
 			}
@@ -2088,6 +1765,7 @@
 			        state.talentPoints = (state.talentPoints || 0) + 5;
 			        state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0; state.treeLevel = 1; state.spells = {}; state.peaches = 20;
 			        state.currentWorldIdx = 0;
+			        state.constitutionAwakenedThisLife = false;
 			        renderAll(); await saveState();
 			    }
 			};
@@ -2161,28 +1839,101 @@
 			    }, 1500);
 			};
 
+			// ===== 像素人绘制 =====
+			const PX_COLS = 26, PX_ROWS = 16;
+			const FIGHTER_IDLE = [
+			  '....XX.....',
+			  '...XXXX....',
+			  '...XOOX....',
+			  '...XOOX....',
+			  '...XXXX....',
+			  '..XXXXXX...',
+			  '.XX.XX.XX..',
+			  'XX..XX..XX.',
+			  '....XX.....',
+			  '....XX.....',
+			  '...X..X....',
+			  '...X..X....',
+			  '...X..X....',
+			  '..XX..XX...'
+			];
+			const FIGHTER_STRIKE = [
+			  '....XX.....',
+			  '...XXXX....',
+			  '...XOOX....',
+			  '...XOOX....',
+			  '...XXXX....',
+			  '..XXXXXXWW.',
+			  '.XX.XX.XXWW',
+			  'XX..XX..XWW',
+			  '....XX...W.',
+			  '....XX.....',
+			  '...X..X....',
+			  '...X..X....',
+			  '...X..X....',
+			  '..XX..XX...'
+			];
+			const PX_COLOR_MY   = { X: '#4dd0e1', O: '#ffffff', W: '#ffd700' };
+			const PX_COLOR_ENEMY= { X: '#ef5350', O: '#ffffff', W: '#b39ddb' };
+
+			function drawFighters(myAction, enemyAction) {
+			  const cast = document.getElementById('ldPixelCast');
+			  if (!cast) return;
+			  cast.innerHTML = '';
+			  const myPattern = (myAction === 'strike') ? FIGHTER_STRIKE : FIGHTER_IDLE;
+			  const enemyPattern = (enemyAction === 'strike') ? FIGHTER_STRIKE : FIGHTER_IDLE;
+
+			  const grid = [];
+			  for (let r = 0; r < PX_ROWS; r++) {
+			    grid.push(new Array(PX_COLS).fill(null));
+			  }
+			  for (let r = 0; r < myPattern.length; r++) {
+			    for (let c = 0; c < myPattern[r].length; c++) {
+			      const ch = myPattern[r][c];
+			      if (ch === '.') continue;
+			      const rr = r + 1, cc = c + 1;
+			      if (rr < PX_ROWS && cc < PX_COLS) grid[rr][cc] = { ch, color: PX_COLOR_MY[ch] || '#fff' };
+			    }
+			  }
+			  for (let r = 0; r < enemyPattern.length; r++) {
+			    const row = enemyPattern[r];
+			    for (let c = 0; c < row.length; c++) {
+			      const ch = row[row.length - 1 - c];
+			      if (ch === '.') continue;
+			      const rr = r + 1, cc = 14 + c;
+			      if (rr < PX_ROWS && cc < PX_COLS) grid[rr][cc] = { ch, color: PX_COLOR_ENEMY[ch] || '#fff' };
+			    }
+			  }
+			  for (let r = 0; r < PX_ROWS; r++) {
+			    for (let c = 0; c < PX_COLS; c++) {
+			      const cell = document.createElement('div');
+			      cell.className = 'pixel-cell';
+			      const v = grid[r][c];
+			      if (v) {
+			        cell.style.background = v.color;
+			        cell.style.boxShadow = '0 0 3px ' + v.color;
+			      }
+			      cast.appendChild(cell);
+			    }
+			  }
+			}
+
 			function ldLog(msg) {
 			  const el = document.getElementById('ldBattleLog');
 			  if (!el) return;
 			  el.innerText = msg;
 			}
-			function ldPixelFlash() {
-			  const cast = document.getElementById('ldPixelCast');
-			  if (!cast) return;
-			  cast.innerHTML = '';
-			  const colorPool = ['#00e5ff', '#ffd700', '#ff3b30', '#9c27b0', '#30d158', '#ff00ff'];
-			  for (let i = 0; i < 70; i++) {
-			    const cell = document.createElement('div');
-			    cell.className = 'pixel-cell';
-			    if (Math.random() < 0.55) {
-			      cell.style.background = colorPool[Math.floor(Math.random() * colorPool.length)];
-			      cell.style.boxShadow = '0 0 4px currentColor';
-			    }
-			    cast.appendChild(cell);
+
+			function ldAnimate(actionType) {
+			  if (actionType === 'my') {
+			    ld.myAction = 'strike';
+			    drawFighters(ld.myAction, ld.enemyAction);
+			    setTimeout(() => { ld.myAction = 'idle'; drawFighters(ld.myAction, ld.enemyAction); }, 260);
+			  } else {
+			    ld.enemyAction = 'strike';
+			    drawFighters(ld.myAction, ld.enemyAction);
+			    setTimeout(() => { ld.enemyAction = 'idle'; drawFighters(ld.myAction, ld.enemyAction); }, 260);
 			  }
-			  cast.style.animation = 'none';
-			  void cast.offsetWidth;
-			  cast.style.animation = 'treeBreath 0.4s ease-in-out 2';
 			}
 
 			window.openLifeDeath = function() {
@@ -2235,6 +1986,7 @@
 			  ld.myCritRate = Math.min(1, safeNum(myStats.critRate, 0.05));
 			  ld.myCritDmg = Math.max(1, safeNum(myStats.critDmg, 1.5));
 			  ld.enemyCd = {}; ld.myCd = {};
+			  ld.myAction = 'idle'; ld.enemyAction = 'idle';
 
 			  if (!offline && enemy) {
 			    ld.enemyId = enemyId; ld.enemyName = enemy.name || '无名道友'; ld.enemyOffline = false;
@@ -2255,8 +2007,8 @@
 			  document.getElementById('ldEnemyHpBar').style.width = '100%';
 			  document.getElementById('ldTokenCount').innerText = getSpecialCount('token_life_death');
 			  ldLog(`⚔️ 生死斗开始：${state.name} VS ${ld.enemyName}`);
+			  drawFighters('idle', 'idle');
 			  renderLdSkillBar();
-			  ldPixelFlash();
 			  await saveState();
 			};
 
@@ -2320,7 +2072,7 @@
 			  else if (skillId === 'wind') cd = 3000;
 			  else if (skillId === 'heal') cd = 10000;
 			  ld.myCd[skillId] = now + cd;
-			  ldPixelFlash();
+			  ldAnimate('my');
 
 			  if (skillId === 'heal') {
 			    const heal = Math.round(safeMul(ld.myMaxHp, 0.18));
@@ -2359,7 +2111,7 @@
 			  let cd = 2000;
 			  if (sp.id === 'flame') cd = 6000; else if (sp.id === 'ice') cd = 5000; else if (sp.id === 'shield') cd = 8000; else if (sp.id === 'wind') cd = 3000; else if (sp.id === 'heal') cd = 10000;
 			  ld.enemyCd[sp.id] = now + cd;
-			  ldPixelFlash();
+			  ldAnimate('enemy');
 			  if (sp.id === 'heal') {
 			    const heal = Math.round(safeMul(ld.enemyMaxHp, 0.18));
 			    ld.enemyHp = Math.min(ld.enemyMaxHp, safeAdd(ld.enemyHp, heal));
@@ -2404,6 +2156,7 @@
 			  } else {
 			    state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0;
 			    state.treeLevel = 1; state.spells = {}; state.peaches = 20; state.currentWorldIdx = 0;
+			    state.constitutionAwakenedThisLife = false;
 			    ldLog('💀 生死斗失败！你被击杀，天道将你打入轮回重修（不计入转生次数）');
 			    toast('💀 生死斗失败！你被击杀，强制轮回重修（不计入转生次数）');
 			    if (panel) panel.style.display = 'none';
@@ -2715,6 +2468,7 @@
 			  }
 			  const baseExp = randInt(5, 10); const totalGain = baseExp + totalExpFromEq;
 			  state.exp = safeAdd(state.exp, totalGain); checkLevelUp(); showFloatText(`+${fmt(totalGain)} exp`);
+
 			  if (state.inventory.length >= 500) {
 			    state.inventory.sort((a,b) => a.quality - b.quality);
 			    const removed = state.inventory.shift();
@@ -2754,7 +2508,8 @@
 			  if (!confirm('轮回将重置境界、等级、仙树和仙术，但会获得永久 1% 全属性加成，确定吗？')) return;
 			  state.reincarnateCount = (state.reincarnateCount || 0) + 1; state.talentPoints = (state.talentPoints || 0) + 5;
 			  state.realm = 0; state.realmLevel = 1; state.charLevel = 1; state.exp = 0; state.treeLevel = 1; state.spells = {}; state.peaches = 20; state.currentWorldIdx = 0;
-			  toast('☯️ 轮回成功！'); renderAll(); saveState();
+			  state.constitutionAwakenedThisLife = false;
+			  toast('☯️ 轮回成功！本轮体质觉醒资格已恢复'); renderAll(); saveState();
 			};
 
 			window.buyJadeItem = async function(itemType) {
@@ -3135,6 +2890,13 @@
 			  const stats = calcStats(); const info = getRealmDisplayInfo();
 			  let displayRealm = getCampPrefix() + info.realmName + (info.isSuppressed ? ' (受压制)' : '');
 			  document.getElementById('profRealm').innerText = displayRealm + ' ' + info.level + ' 层';
+
+			  const con = getConstitution();
+			  const profConEl = document.getElementById('profConstitutionText');
+			  if (profConEl) profConEl.innerText = con.name + `（攻×${con.atkMult} 血×${con.hpMult}）`;
+			  const profConBadge = document.getElementById('profConstitution');
+			  if (profConBadge) profConBadge.innerHTML = `<span class="constitution-badge" style="color:${con.color};border-color:${con.color};background:${con.color}22;">${con.name}</span>`;
+
 			  document.getElementById('profEquipPower').innerText = `评分 ${fmt(stats.equipPower)}`;
 			  document.getElementById('profTree').innerText = fmt(state.treeLevel);
 			  document.getElementById('profPet').innerText = state.pets.equipped !== null ? PET_NAMES[state.pets.equipped] : '未上阵';
@@ -3240,6 +3002,13 @@
 			  const info = getRealmDisplayInfo();
 			  let displayRealm = getCampPrefix() + info.realmName + (info.isSuppressed ? ' (受压制)' : '');
 			  document.getElementById('headerRealm').innerText = worldStr + ' · ' + displayRealm + ' ' + info.level + ' 层 · Lv.' + (state.charLevel||1) + ' (飞升率+' + ascBonus + '%)';
+
+			  const con = getConstitution();
+			  const headConEl = document.getElementById('headerConstitution');
+			  if (headConEl) {
+			    headConEl.innerHTML = `<span class="constitution-badge" style="color:${con.color};border-color:${con.color};background:${con.color}22;">体质 · ${con.name}</span>`;
+			  }
+
 			  document.getElementById('headerJade').innerText = fmt(state.jade);
 			  document.getElementById('headerPeaches').innerText = fmt(state.peaches);
 			  document.getElementById('headerAtk').innerText = fmt(stats.atk);
@@ -3261,6 +3030,10 @@
 			  renderSect(); renderHome(); renderMails(); renderFriends(); renderBag();
 			  renderAuction(); renderSecretRealms(); renderRankTabs(); renderWorldTab(); renderAlchemy(); renderCampDisplay();
 			  document.getElementById('realmDisplay').innerText = displayRealm + ' ' + info.level + ' 层';
+
+			  const conDisplay = document.getElementById('constitutionDisplay');
+			  if (conDisplay) conDisplay.innerText = con.name;
+
 			  document.getElementById('extraDropDisplay').innerText = state.extraDropLevel || 0;
 			  document.getElementById('reincarnateBonus').innerText = state.reincarnateCount || 0;
 
@@ -3623,10 +3396,36 @@
 			  document.querySelectorAll('#encyclopediaModal .rank-tab button').forEach(b => b.classList.remove('active')); if (btn) btn.classList.add('active');
 			  const el = document.getElementById('encyclopediaContent'); el.innerHTML = '';
 			  const row = (left, right, hl) => {
-			    const div = document.createElement('div'); div.style.cssText = 'padding:8px 12px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:13px;display:flex;justify-content:space-between;gap:8px;' + (hl ? 'border:1px solid #ffd700;color:#ffd700;' : '');
+			    const div = document.createElement('div'); div.className = 'num-row'; if (hl) { div.style.border = '1px solid #ffd700'; div.style.color = '#ffd700'; }
 			    div.innerHTML = '<span>' + left + '</span><span style="text-align:right;color:#ccc;">' + right + '</span>'; el.appendChild(div);
 			  };
 			  if (type === 'realm') { REALM_NAMES.forEach((name, idx) => row('第 ' + (idx+1) + ' 境', getCampPrefix() + name, state && state.realm === idx));
+			  } else if (type === 'constitution') {
+			    const curIdx = state ? (Number(state.constitution) || 0) : -1;
+			    CONSTITUTIONS.forEach((c, idx) => {
+			      const hl = idx === curIdx;
+			      const owned = state && state.awakenedHistory && state.awakenedHistory.includes(idx);
+			      const left = (hl ? '✅ ' : (owned ? '☑️ ' : '')) + (idx + 1) + '. ' + c.name;
+			      const right = `攻×${c.atkMult} 血×${c.hpMult}`;
+			      const div = document.createElement('div'); div.className = 'num-row'; if (hl) { div.style.border = '1px solid ' + c.color; div.style.color = c.color; }
+			      div.innerHTML = '<span>' + left + '</span><span style="text-align:right;color:' + c.color + ';">' + right + '</span>'; el.appendChild(div);
+			    });
+			  } else if (type === 'numbers') {
+			    const curExp = state ? safeNum(state.exp, 0) : 0;
+			    let curTierIdx = 0;
+			    for (let i = 0; i < NUMBER_TIERS.length; i++) { if (curExp >= Math.pow(10, NUMBER_TIERS[i].exp)) curTierIdx = i; else break; }
+			    NUMBER_TIERS.forEach((t, idx) => {
+			      const hl = idx === curTierIdx;
+			      const div = document.createElement('div'); div.className = 'num-row';
+			      if (hl) { div.style.border = '1px solid #ffd700'; div.style.color = '#ffd700'; }
+			      const left = (hl ? '✅ ' : '') + t.name;
+			      const right = `10^${t.exp}（${t.label}）`;
+			      div.innerHTML = '<span>' + left + '</span><span style="text-align:right;color:#ccc;">' + right + '</span>';
+			      el.appendChild(div);
+			    });
+			    const note = document.createElement('div'); note.style.cssText = 'font-size:11px;color:#888;margin-top:8px;';
+			    note.innerText = '当前经验值所在阶位已高亮。战斗伤害、战力等数值使用同一套中文阶位格式化。';
+			    el.appendChild(note);
 			  } else if (type === 'pet') { PET_NAMES.forEach((name, idx) => { const own = state && state.pets && state.pets.owned && state.pets.owned.includes(idx); row((own?'✅ ':'🔒 ') + name, '攻击加成 ' + fmt(PET_ATK[idx]||0), own); });
 			  } else if (type === 'spirit') { SPIRIT_NAMES.forEach((name, idx) => { const own = state && state.spirits && state.spirits.owned && state.spirits.owned.includes(idx); row((own?'✅ ':'🔒 ') + name, '气血加成 ' + fmt(SPIRIT_HP[idx]||0), own); });
 			  } else if (type === 'mount') { if (typeof MOUNT_NAMES === 'undefined') { row('暂无', ''); return; } MOUNT_NAMES.forEach((name, idx) => { const own = state && state.mounts && state.mounts.owned && state.mounts.owned.includes(idx); const a = ((MOUNT_ATK_BONUS[idx]||0)*100).toFixed(1) + '%'; const h = ((MOUNT_HP_BONUS[idx]||0)*100).toFixed(1) + '%'; row((own?'✅ ':'🔒 ') + '🐴' + name, '攻+'+a+' 血+'+h, own); });
@@ -3667,6 +3466,10 @@
 			      if (!state.pills) state.pills = []; if (state.herbs === undefined) state.herbs = 0; if (!state.herbItems) state.herbItems = [];
 			      if(!state.pillBuffs) state.pillBuffs = {}; if(!state.specialItems) state.specialItems = {}; if(!state.keys) state.keys = { normal: 0, gold: 0, chaos: 0 };
 			      if(!state.buffs) state.buffs = {}; if(!state.mounts) state.mounts = { owned: [], equipped: null, exp: {} }; if(!state.camp) state.camp = 'xian';
+			      if (state.constitution === undefined || state.constitution === null) state.constitution = 0;
+			      if (!state.awakenedHistory) state.awakenedHistory = [];
+			      if (!state.awakenStones) state.awakenStones = { normal: 0, spirit: 0, xian: 0, shen: 0, dao: 0, shenzhou: 0 };
+			      if (state.constitutionAwakenedThisLife === undefined) state.constitutionAwakenedThisLife = false;
 			    } else {
 			      state = freshState(playerName); await set(playerRef, state);
 			    }
@@ -3692,9 +3495,11 @@
 			          let eqP = 0; if(p.equipment) { for(let pt of PART_KEYS){ if(p.equipment[pt]) eqP += (p.equipment[pt].atk||0) + (p.equipment[pt].hp||0); } }
 			          const pPillAtk = Math.max(0, safeNum(p.atk, 10) - 10); const pPillHp = Math.max(0, safeNum(p.hp, 100) - 100);
 			          let reincMult = 1 + (p.reincarnateCount||0)*0.01;
-			          allOnlinePlayers[k].totalPower = (baseP + eqP + petP + pPillAtk + pPillHp * 0.5) * reincMult;
+			          const pConIdx = Math.max(0, Math.min(CONSTITUTIONS.length - 1, Number(p.constitution) || 0));
+			          const pCon = CONSTITUTIONS[pConIdx];
+			          allOnlinePlayers[k].totalPower = (baseP + eqP + petP + pPillAtk + pPillHp * 0.5) * reincMult * pCon.atkMult;
 			          allOnlinePlayers[k].petPower = petP * reincMult; allOnlinePlayers[k].equipPower = eqP * reincMult;
-			          allOnlinePlayers[k].atk = (baseP + eqP + petP + pPillAtk) * reincMult; allOnlinePlayers[k].hp = (baseP * 10 + pPillHp) * reincMult;
+			          allOnlinePlayers[k].atk = (baseP + eqP + petP + pPillAtk) * reincMult * pCon.atkMult; allOnlinePlayers[k].hp = (baseP * 10 + pPillHp) * reincMult * pCon.hpMult;
 			        }
 			      }
 			    });
@@ -3702,7 +3507,6 @@
 			  } catch (e) { authErr('读取存档失败: ' + e.message); return false; }
 			}
 
-			// ===== Google 登录逻辑（重定向版） =====
 			window.doGoogleLogin = async function() {
 			  try {
 			    const provider = new firebase.auth.GoogleAuthProvider();
@@ -3750,7 +3554,6 @@
 
 			    const btnG = document.getElementById('btnGoogleLogin'); if (btnG) btnG.style.display = 'block';
 
-			    // 检测 Google 重定向返回结果
 			    auth.getRedirectResult().then(async function(result) {
 			      if (result.user) {
 			        const user = result.user;
